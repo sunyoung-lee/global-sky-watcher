@@ -1,10 +1,26 @@
 import { useState, useEffect, useRef } from 'react'
 
+const OPENSKY_URL = 'https://opensky-network.org/api/states/all'
 const isDev = location.hostname === 'localhost'
 const WS_URL = 'ws://localhost:4000'
-const API_URL = isDev ? 'http://localhost:4000/api/flights' : '/api/flights'
 const POLL_INTERVAL = 15000
 const RECONNECT_DELAY = 3000
+
+function parseFlights(data) {
+  if (!data?.states) return []
+  return data.states
+    .filter(s => s[5] != null && s[6] != null && !s[8])
+    .map(s => ({
+      icao24: s[0],
+      callsign: (s[1] || '').trim(),
+      country: s[2],
+      lng: s[5],
+      lat: s[6],
+      altitude: s[7] || 0,
+      velocity: s[9] || 0,
+      heading: s[10] || 0,
+    }))
+}
 
 export default function useFlightData() {
   const [flights, setFlights] = useState([])
@@ -16,21 +32,24 @@ export default function useFlightData() {
   useEffect(() => {
     let cancelled = false
 
-    async function fetchREST() {
+    async function fetchOpenSky() {
       try {
-        const res = await fetch(API_URL)
-        if (!res.ok) throw new Error(res.statusText)
-        setFlights(await res.json())
+        const res = await fetch(OPENSKY_URL)
+        if (!res.ok) throw new Error(`OpenSky: ${res.status}`)
+        const data = await res.json()
+        setFlights(parseFlights(data))
+        setConnected(true)
         setError(null)
       } catch (err) {
         setError(err.message)
+        setConnected(false)
       }
     }
 
     function startPolling() {
       if (pollingRef.current) return
-      fetchREST()
-      pollingRef.current = setInterval(fetchREST, POLL_INTERVAL)
+      fetchOpenSky()
+      pollingRef.current = setInterval(fetchOpenSky, POLL_INTERVAL)
     }
 
     function connectWS() {
@@ -65,11 +84,9 @@ export default function useFlightData() {
     }
 
     if (isDev) {
-      // 로컬: WebSocket 우선, REST 폴백
       connectWS()
     } else {
-      // 프로덕션 (Vercel): REST polling만 사용
-      setConnected(true)
+      // 프로덕션: 브라우저에서 OpenSky API 직접 호출 (CORS 지원)
       startPolling()
     }
 
