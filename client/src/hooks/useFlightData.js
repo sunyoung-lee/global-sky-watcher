@@ -3,10 +3,10 @@ import { useState, useEffect, useRef } from 'react'
 const OPENSKY_URL = 'https://opensky-network.org/api/states/all'
 const isDev = location.hostname === 'localhost'
 const WS_URL = 'ws://localhost:4000'
-const POLL_INTERVAL = 15000
+const POLL_INTERVAL = 30000
 const RECONNECT_DELAY = 3000
 const MAX_FLIGHTS = 5000
-const MAX_BACKOFF = 60000
+const RATE_LIMIT_BACKOFF = 90000
 
 function parseFlights(data) {
   if (!data?.states) return []
@@ -48,6 +48,14 @@ export default function useFlightData() {
       if (document.hidden) return
       try {
         const res = await fetch(OPENSKY_URL)
+        if (res.status === 429) {
+          // Rate limit — 폴링 중단 후 90초 뒤 재시도
+          clearInterval(pollingRef.current)
+          pollingRef.current = null
+          setError('Rate limited — retrying shortly')
+          setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
+          return
+        }
         if (!res.ok) throw new Error(`OpenSky: ${res.status}`)
         const data = await res.json()
         setFlights(parseFlights(data))
@@ -58,12 +66,11 @@ export default function useFlightData() {
         errorCountRef.current++
         setError(err.message)
         setConnected(false)
-        // 연속 에러 시 백오프: 간격을 점진적으로 늘림
         if (errorCountRef.current >= 3) {
           clearInterval(pollingRef.current)
           pollingRef.current = null
-          const backoff = Math.min(POLL_INTERVAL * errorCountRef.current, MAX_BACKOFF)
-          setTimeout(() => { if (!cancelled) startPolling(backoff) }, backoff)
+          const backoff = Math.min(POLL_INTERVAL * (errorCountRef.current - 1), RATE_LIMIT_BACKOFF)
+          setTimeout(() => { if (!cancelled) startPolling() }, backoff)
         }
       }
     }
