@@ -1,17 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 
-const OPENSKY_URL = 'https://opensky-network.org/api/states/all'
 const isDev = location.hostname === 'localhost'
 const WS_URL = 'ws://localhost:4000'
-const POLL_INTERVAL = 60000
+const FLIGHTS_URL = isDev ? 'https://opensky-network.org/api/states/all' : '/api/flights'
+const POLL_INTERVAL = 30000
 const RECONNECT_DELAY = 3000
 const MAX_FLIGHTS = 5000
 const RATE_LIMIT_BACKOFF = 90000
 const CACHE_KEY = 'gsw_flights'
 
-function parseFlights(data) {
+// OpenSky raw → parsed (dev용), 프로덕션은 서버에서 파싱 완료
+function parseRaw(data) {
   if (!data?.states) return []
-  const all = data.states
+  return data.states
     .filter(s => s[5] != null && s[6] != null && !s[8])
     .map(s => ({
       icao24: s[0],
@@ -23,13 +24,14 @@ function parseFlights(data) {
       velocity: s[9] || 0,
       heading: s[10] || 0,
     }))
-  if (all.length <= MAX_FLIGHTS) return all
-  const step = all.length / MAX_FLIGHTS
-  const sampled = []
-  for (let i = 0; i < MAX_FLIGHTS; i++) {
-    sampled.push(all[Math.floor(i * step)])
-  }
-  return sampled
+}
+
+function sample(arr) {
+  if (arr.length <= MAX_FLIGHTS) return arr
+  const step = arr.length / MAX_FLIGHTS
+  const out = []
+  for (let i = 0; i < MAX_FLIGHTS; i++) out.push(arr[Math.floor(i * step)])
+  return out
 }
 
 function loadCache() {
@@ -37,7 +39,6 @@ function loadCache() {
     const raw = localStorage.getItem(CACHE_KEY)
     if (!raw) return null
     const { flights, ts } = JSON.parse(raw)
-    // 캐시 유효: 10분 이내
     if (Date.now() - ts < 600000 && flights?.length) return flights
   } catch { /* ignore */ }
   return null
@@ -61,20 +62,20 @@ export default function useFlightData() {
   useEffect(() => {
     let cancelled = false
 
-    async function fetchOpenSky() {
+    async function fetchFlights() {
       if (document.hidden) return
       try {
-        const res = await fetch(OPENSKY_URL)
+        const res = await fetch(FLIGHTS_URL)
         if (res.status === 429) {
           clearInterval(pollingRef.current)
           pollingRef.current = null
-          const delay = flights.length > 0 ? RATE_LIMIT_BACKOFF : 15000
-          setTimeout(() => { if (!cancelled) startPolling() }, delay)
+          setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
           return
         }
-        if (!res.ok) throw new Error(`OpenSky: ${res.status}`)
+        if (!res.ok) throw new Error(`API: ${res.status}`)
         const data = await res.json()
-        const parsed = parseFlights(data)
+        // 프로덕션: 서버가 배열 반환 / dev: OpenSky raw 응답
+        const parsed = sample(Array.isArray(data) ? data : parseRaw(data))
         setFlights(parsed)
         setConnected(true)
         setError(null)
@@ -83,7 +84,7 @@ export default function useFlightData() {
       } catch (err) {
         errorCountRef.current++
         setError(err.message)
-        if (flights.length === 0) setConnected(false)
+        if (!cached) setConnected(false)
         if (errorCountRef.current >= 3) {
           clearInterval(pollingRef.current)
           pollingRef.current = null
@@ -95,8 +96,8 @@ export default function useFlightData() {
 
     function startPolling(interval = POLL_INTERVAL) {
       if (pollingRef.current) return
-      fetchOpenSky()
-      pollingRef.current = setInterval(fetchOpenSky, interval)
+      fetchFlights()
+      pollingRef.current = setInterval(fetchFlights, interval)
     }
 
     function handleVisibility() {

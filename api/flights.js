@@ -4,18 +4,27 @@ export const config = { maxDuration: 30 }
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Cache-Control', 's-maxage=10, stale-while-revalidate=30')
+  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60')
 
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 15000)
+    const timeout = setTimeout(() => controller.abort(), 20000)
+
+    const headers = {
+      'Accept': 'application/json',
+      'User-Agent': 'GlobalSkyWatcher/1.0',
+    }
+
+    // OpenSky 인증 (Vercel 환경변수)
+    const user = process.env.OPENSKY_USERNAME
+    const pass = process.env.OPENSKY_PASSWORD
+    if (user && pass) {
+      headers['Authorization'] = 'Basic ' + Buffer.from(`${user}:${pass}`).toString('base64')
+    }
 
     const response = await fetch(OPENSKY_URL, {
       signal: controller.signal,
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'GlobalSkyWatcher/1.0',
-      },
+      headers,
     })
     clearTimeout(timeout)
 
@@ -29,7 +38,8 @@ export default async function handler(req, res) {
     if (!data.states) return res.json([])
 
     const flights = data.states
-      .filter(s => s[5] != null && s[6] != null && !s[8]) // lat, lng 존재 + 비행 중
+      .filter(s => s[5] != null && s[6] != null && !s[8])
+      .filter(s => (s[1] || '').trim().length > 0)
       .map(s => ({
         icao24: s[0],
         callsign: (s[1] || '').trim(),
