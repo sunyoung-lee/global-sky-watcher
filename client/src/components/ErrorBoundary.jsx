@@ -1,14 +1,10 @@
 import { Component } from 'react'
 
 export default class ErrorBoundary extends Component {
-  state = { hasError: false }
+  state = { hasError: false, error: null }
 
-  static getDerivedStateFromError() {
-    return { hasError: true }
-  }
-
-  componentDidCatch(error) {
-    console.error('Globe render error:', error)
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
   }
 
   render() {
@@ -16,10 +12,20 @@ export default class ErrorBoundary extends Component {
       return (
         <div style={{
           position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem',
+          gap: '12px', padding: '20px', textAlign: 'center',
         }}>
-          3D Globe failed to load — please refresh
+          <div>3D Globe failed to load</div>
+          <pre style={{
+            color: 'rgba(255,100,100,0.7)', fontSize: '0.7rem',
+            maxWidth: '80vw', overflow: 'auto', whiteSpace: 'pre-wrap',
+          }}>
+            {this.state.error?.toString()}
+            {'\n'}
+            {this.state.error?.stack?.split('\n').slice(0, 5).join('\n')}
+          </pre>
         </div>
       )
     }
