@@ -6,7 +6,7 @@ const { WebSocketServer } = require('ws')
 const { fetchFlights } = require('./fetchFlights')
 
 const PORT = process.env.PORT || 4000
-const POLL_INTERVAL = 15000 // 15초 간격
+const POLL_INTERVAL = parseInt(process.env.POLL_INTERVAL, 10) || 15000
 
 const app = express()
 app.use(cors())

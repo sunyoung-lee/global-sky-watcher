@@ -6,6 +6,7 @@ const WS_URL = 'ws://localhost:4000'
 const POLL_INTERVAL = 15000
 const RECONNECT_DELAY = 3000
 const MAX_FLIGHTS = 5000
+const MAX_BACKOFF = 60000
 
 function parseFlights(data) {
   if (!data?.states) return []
@@ -37,11 +38,14 @@ export default function useFlightData() {
   const [connected, setConnected] = useState(false)
   const wsRef = useRef(null)
   const pollingRef = useRef(null)
+  const errorCountRef = useRef(0)
 
   useEffect(() => {
     let cancelled = false
 
     async function fetchOpenSky() {
+      // 탭 비활성 시 폴링 건너뛰기
+      if (document.hidden) return
       try {
         const res = await fetch(OPENSKY_URL)
         if (!res.ok) throw new Error(`OpenSky: ${res.status}`)
@@ -49,16 +53,37 @@ export default function useFlightData() {
         setFlights(parseFlights(data))
         setConnected(true)
         setError(null)
+        errorCountRef.current = 0
       } catch (err) {
+        errorCountRef.current++
         setError(err.message)
         setConnected(false)
+        // 연속 에러 시 백오프: 간격을 점진적으로 늘림
+        if (errorCountRef.current >= 3) {
+          clearInterval(pollingRef.current)
+          pollingRef.current = null
+          const backoff = Math.min(POLL_INTERVAL * errorCountRef.current, MAX_BACKOFF)
+          setTimeout(() => { if (!cancelled) startPolling(backoff) }, backoff)
+        }
       }
     }
 
-    function startPolling() {
+    function startPolling(interval = POLL_INTERVAL) {
       if (pollingRef.current) return
       fetchOpenSky()
-      pollingRef.current = setInterval(fetchOpenSky, POLL_INTERVAL)
+      pollingRef.current = setInterval(fetchOpenSky, interval)
+    }
+
+    // 탭 가시성 변경 시 폴링 제어
+    function handleVisibility() {
+      if (document.hidden) {
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current)
+          pollingRef.current = null
+        }
+      } else if (!isDev || !wsRef.current || wsRef.current.readyState !== 1) {
+        startPolling()
+      }
     }
 
     function connectWS() {
@@ -92,6 +117,8 @@ export default function useFlightData() {
       ws.onerror = () => ws.close()
     }
 
+    document.addEventListener('visibilitychange', handleVisibility)
+
     if (isDev) {
       connectWS()
     } else {
@@ -101,6 +128,7 @@ export default function useFlightData() {
 
     return () => {
       cancelled = true
+      document.removeEventListener('visibilitychange', handleVisibility)
       wsRef.current?.close()
       if (pollingRef.current) clearInterval(pollingRef.current)
     }
