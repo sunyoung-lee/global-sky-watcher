@@ -4,10 +4,11 @@ import Globe from './components/Globe'
 import Header from './components/Header'
 import StatusBar from './components/StatusBar'
 import FlightCard from './components/FlightCard'
+import Toast from './components/Toast'
 import ErrorBoundary from './components/ErrorBoundary'
 
 function App() {
-  const { flights, connected } = useFlightData()
+  const { flights, error, connected } = useFlightData()
   const [selected, setSelected] = useState(null)
 
   return (
@@ -18,6 +19,7 @@ function App() {
       <Header />
       <StatusBar connected={connected} flightCount={flights.length} />
       {selected && <FlightCard flight={selected} onClose={() => setSelected(null)} />}
+      {error && <Toast message={`Connection issue: ${error}`} />}
     </div>
   )
 }
