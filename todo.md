@@ -8,7 +8,7 @@
 - [x] 지구본 위 비행기 위치 포인트 표시
 - [x] 백엔드 서버 구축 (Express + WebSocket)
 - [x] WebSocket을 통한 실시간 데이터 푸시
-- [ ] 기본 레이아웃 및 다크 테마 적용
+- [x] 기본 레이아웃 및 다크 테마 적용
 
 ## v2.0 보완 (Feature Complete)
 

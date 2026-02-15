@@ -1,10 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react'
 import ReactGlobe from 'react-globe.gl'
-import useFlightData from '../hooks/useFlightData'
 
-export default function Globe() {
+export default function Globe({ flights = [] }) {
   const globeRef = useRef()
-  const { flights } = useFlightData()
 
   useEffect(() => {
     const globe = globeRef.current

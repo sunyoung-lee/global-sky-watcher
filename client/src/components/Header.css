@@ -1,0 +1,24 @@
+.header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 32px 40px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.header-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+}
+
+.header-sub {
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
