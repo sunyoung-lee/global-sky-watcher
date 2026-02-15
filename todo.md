@@ -3,7 +3,7 @@
 ## v1.0 뼈대 (Core Structure)
 
 - [x] 프로젝트 초기 세팅 (Vite + React)
-- [ ] 기본 3D 지구본 렌더링 (react-globe.gl)
+- [x] 기본 3D 지구본 렌더링 (react-globe.gl)
 - [ ] OpenSky API 연동 — 비행 데이터 fetch
 - [ ] 지구본 위 비행기 위치 포인트 표시
 - [ ] 백엔드 서버 구축 (Express + WebSocket)
