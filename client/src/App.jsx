@@ -1,10 +1,8 @@
-import { lazy, Suspense } from 'react'
 import useFlightData from './hooks/useFlightData'
+import Globe from './components/Globe'
 import Header from './components/Header'
 import StatusBar from './components/StatusBar'
 import ErrorBoundary from './components/ErrorBoundary'
-
-const Globe = lazy(() => import('./components/Globe'))
 
 function App() {
   const { flights, connected } = useFlightData()
@@ -12,9 +10,7 @@ function App() {
   return (
     <div className="app">
       <ErrorBoundary>
-        <Suspense fallback={null}>
-          <Globe flights={flights} />
-        </Suspense>
+        <Globe flights={flights} />
       </ErrorBoundary>
       <Header />
       <StatusBar connected={connected} flightCount={flights.length} />

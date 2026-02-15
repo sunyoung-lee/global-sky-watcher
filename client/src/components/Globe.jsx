@@ -1,50 +1,95 @@
-import { useEffect, useRef } from 'react'
-import GlobeGL from 'globe.gl'
+import { useEffect, useRef, useState } from 'react'
+
+function detectWebGL() {
+  try {
+    const canvas = document.createElement('canvas')
+    return !!(
+      canvas.getContext('webgl2') ||
+      canvas.getContext('webgl') ||
+      canvas.getContext('experimental-webgl')
+    )
+  } catch {
+    return false
+  }
+}
 
 export default function Globe({ flights = [] }) {
   const containerRef = useRef()
   const globeRef = useRef(null)
+  const [webglSupported] = useState(detectWebGL)
 
-  // 초기화 (1회)
   useEffect(() => {
-    const globe = GlobeGL()
-      .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-      .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
-      .atmosphereColor('#3a86ff')
-      .atmosphereAltitude(0.25)
-      .pointLat('lat')
-      .pointLng('lng')
-      .pointColor(() => '#ffbe0b')
-      .pointAltitude(d => Math.max(d.altitude / 200000, 0.01))
-      .pointRadius(0.15)
-      .width(window.innerWidth)
-      .height(window.innerHeight)
-      (containerRef.current)
+    if (!webglSupported || !containerRef.current) return
 
-    // 제주도 상공 초기 시점
-    globe.pointOfView({ lat: 33.5, lng: 126.5, altitude: 2.5 }, 0)
+    let globe
+    import('globe.gl').then(({ default: GlobeGL }) => {
+      if (!containerRef.current) return
 
-    // 자동 회전
-    globe.controls().autoRotate = true
-    globe.controls().autoRotateSpeed = 0.3
+      globe = GlobeGL({ animateIn: false })
+        .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+        .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+        .atmosphereColor('#3a86ff')
+        .atmosphereAltitude(0.25)
+        .pointLat('lat')
+        .pointLng('lng')
+        .pointColor(() => '#ffbe0b')
+        .pointAltitude(d => Math.max(d.altitude / 200000, 0.01))
+        .pointRadius(0.15)
+        .width(window.innerWidth)
+        .height(window.innerHeight)
+        (containerRef.current)
 
-    globeRef.current = globe
+      globe.pointOfView({ lat: 33.5, lng: 126.5, altitude: 2.5 }, 0)
+      globe.controls().autoRotate = true
+      globe.controls().autoRotateSpeed = 0.3
 
-    const onResize = () => globe.width(window.innerWidth).height(window.innerHeight)
+      globeRef.current = globe
+    })
+
+    const onResize = () => {
+      globeRef.current?.width(window.innerWidth).height(window.innerHeight)
+    }
     window.addEventListener('resize', onResize)
 
     return () => {
       window.removeEventListener('resize', onResize)
-      globe._destructor?.()
+      if (globe) {
+        globe.pointsData([])
+        globe.controls().dispose?.()
+        globe.renderer().dispose()
+        globe.scene().clear()
+        const container = containerRef.current
+        if (container) container.innerHTML = ''
+      }
+      globeRef.current = null
     }
-  }, [])
+  }, [webglSupported])
 
-  // 비행 데이터 업데이트
   useEffect(() => {
     if (globeRef.current) {
       globeRef.current.pointsData(flights)
     }
   }, [flights])
+
+  if (!webglSupported) {
+    return (
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        gap: '16px',
+      }}>
+        <img
+          src="//unpkg.com/three-globe/example/img/earth-night.jpg"
+          alt="Earth"
+          style={{ width: '300px', borderRadius: '50%', opacity: 0.7 }}
+        />
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>
+          WebGL is not available — showing static view
+        </p>
+      </div>
+    )
+  }
 
   return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 }
