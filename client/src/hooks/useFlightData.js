@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 
+const isDev = location.hostname === 'localhost'
 const WS_URL = 'ws://localhost:4000'
-const API_URL = 'http://localhost:4000/api/flights'
+const API_URL = isDev ? 'http://localhost:4000/api/flights' : '/api/flights'
+const POLL_INTERVAL = 15000
 const RECONNECT_DELAY = 3000
 
 export default function useFlightData() {
@@ -13,40 +15,6 @@ export default function useFlightData() {
 
   useEffect(() => {
     let cancelled = false
-
-    function connectWS() {
-      if (cancelled) return
-      const ws = new WebSocket(WS_URL)
-      wsRef.current = ws
-
-      ws.onopen = () => {
-        setConnected(true)
-        setError(null)
-        // WebSocket 연결되면 REST polling 중지
-        if (pollingRef.current) {
-          clearInterval(pollingRef.current)
-          pollingRef.current = null
-        }
-      }
-
-      ws.onmessage = (event) => {
-        try {
-          setFlights(JSON.parse(event.data))
-        } catch { /* ignore */ }
-      }
-
-      ws.onclose = () => {
-        setConnected(false)
-        if (!cancelled) {
-          // REST 폴백 시작
-          startPolling()
-          // WebSocket 재연결 시도
-          setTimeout(connectWS, RECONNECT_DELAY)
-        }
-      }
-
-      ws.onerror = () => ws.close()
-    }
 
     async function fetchREST() {
       try {
@@ -62,10 +30,48 @@ export default function useFlightData() {
     function startPolling() {
       if (pollingRef.current) return
       fetchREST()
-      pollingRef.current = setInterval(fetchREST, 15000)
+      pollingRef.current = setInterval(fetchREST, POLL_INTERVAL)
     }
 
-    connectWS()
+    function connectWS() {
+      if (cancelled) return
+      const ws = new WebSocket(WS_URL)
+      wsRef.current = ws
+
+      ws.onopen = () => {
+        setConnected(true)
+        setError(null)
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current)
+          pollingRef.current = null
+        }
+      }
+
+      ws.onmessage = (event) => {
+        try {
+          setFlights(JSON.parse(event.data))
+        } catch { /* ignore */ }
+      }
+
+      ws.onclose = () => {
+        setConnected(false)
+        if (!cancelled) {
+          startPolling()
+          setTimeout(connectWS, RECONNECT_DELAY)
+        }
+      }
+
+      ws.onerror = () => ws.close()
+    }
+
+    if (isDev) {
+      // 로컬: WebSocket 우선, REST 폴백
+      connectWS()
+    } else {
+      // 프로덕션 (Vercel): REST polling만 사용
+      setConnected(true)
+      startPolling()
+    }
 
     return () => {
       cancelled = true
