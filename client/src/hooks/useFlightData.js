@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 
+const OPENSKY_URL = 'https://opensky-network.org/api/states/all'
 const isDev = location.hostname === 'localhost'
 const WS_URL = 'ws://localhost:4000'
-const FLIGHTS_URL = isDev ? 'https://opensky-network.org/api/states/all' : '/api/flights'
 const POLL_INTERVAL = 30000
 const RECONNECT_DELAY = 3000
 const MAX_FLIGHTS = 5000
@@ -62,20 +62,38 @@ export default function useFlightData() {
   useEffect(() => {
     let cancelled = false
 
+    // 프록시 → 직접 호출 폴백 체인
+    async function tryFetch(url) {
+      const res = await fetch(url)
+      if (res.status === 429) return { rateLimited: true }
+      if (!res.ok) throw new Error(`${res.status}`)
+      const data = await res.json()
+      return { data }
+    }
+
     async function fetchFlights() {
       if (document.hidden) return
       try {
-        const res = await fetch(FLIGHTS_URL)
-        if (res.status === 429) {
+        let result
+        if (!isDev) {
+          // 프로덕션: 프록시 먼저 시도, 실패 시 직접 호출
+          try {
+            result = await tryFetch('/api/flights')
+          } catch {
+            result = await tryFetch(OPENSKY_URL)
+          }
+        } else {
+          result = await tryFetch(OPENSKY_URL)
+        }
+
+        if (result.rateLimited) {
           clearInterval(pollingRef.current)
           pollingRef.current = null
           setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
           return
         }
-        if (!res.ok) throw new Error(`API: ${res.status}`)
-        const data = await res.json()
-        // 프로덕션: 서버가 배열 반환 / dev: OpenSky raw 응답
-        const parsed = sample(Array.isArray(data) ? data : parseRaw(data))
+
+        const parsed = sample(Array.isArray(result.data) ? result.data : parseRaw(result.data))
         setFlights(parsed)
         setConnected(true)
         setError(null)
