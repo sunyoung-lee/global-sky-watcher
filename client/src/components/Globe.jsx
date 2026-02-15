@@ -1,8 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import ReactGlobe from 'react-globe.gl'
+import useFlightData from '../hooks/useFlightData'
 
 export default function Globe() {
   const globeRef = useRef()
+  const { flights } = useFlightData()
 
   useEffect(() => {
     const globe = globeRef.current
@@ -16,6 +18,10 @@ export default function Globe() {
     globe.controls().autoRotateSpeed = 0.3
   }, [])
 
+  const pointColor = useCallback(() => '#ffbe0b', [])
+  const pointAlt = useCallback((d) => Math.max(d.altitude / 200000, 0.01), [])
+  const pointRadius = useCallback(() => 0.15, [])
+
   return (
     <ReactGlobe
       ref={globeRef}
@@ -25,6 +31,12 @@ export default function Globe() {
       atmosphereAltitude={0.25}
       width={window.innerWidth}
       height={window.innerHeight}
+      pointsData={flights}
+      pointLat="lat"
+      pointLng="lng"
+      pointColor={pointColor}
+      pointAltitude={pointAlt}
+      pointRadius={pointRadius}
     />
   )
 }
