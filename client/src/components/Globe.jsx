@@ -1,5 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 
+// 고도(m) → 노란색(#ffbe0b, 저고도) ~ 청록색(#00f5d4, 고고도) 보간
+function altitudeColor(d) {
+  const t = Math.min(d.altitude / 12000, 1) // 0~12km 범위 정규화
+  const r = Math.round(255 * (1 - t))
+  const g = Math.round(190 + 55 * t)
+  const b = Math.round(11 + 201 * t)
+  return `rgb(${r},${g},${b})`
+}
+
 function detectWebGL() {
   try {
     const canvas = document.createElement('canvas')
@@ -32,7 +41,7 @@ export default function Globe({ flights = [] }) {
         .atmosphereAltitude(0.25)
         .pointLat('lat')
         .pointLng('lng')
-        .pointColor(() => '#ffbe0b')
+        .pointColor(altitudeColor)
         .pointAltitude(d => Math.max(d.altitude / 200000, 0.01))
         .pointRadius(0.15)
         .width(window.innerWidth)
