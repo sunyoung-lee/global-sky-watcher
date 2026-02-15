@@ -22,9 +22,11 @@ function detectWebGL() {
   }
 }
 
-export default function Globe({ flights = [] }) {
+export default function Globe({ flights = [], onFlightClick }) {
   const containerRef = useRef()
   const globeRef = useRef(null)
+  const callbackRef = useRef(onFlightClick)
+  callbackRef.current = onFlightClick
   const [webglSupported] = useState(detectWebGL)
 
   useEffect(() => {
@@ -48,6 +50,7 @@ export default function Globe({ flights = [] }) {
         .height(window.innerHeight)
         (containerRef.current)
 
+      globe.onPointClick(point => callbackRef.current?.(point))
       globe.pointOfView({ lat: 33.5, lng: 126.5, altitude: 2.5 }, 0)
       globe.controls().autoRotate = true
       globe.controls().autoRotateSpeed = 0.3

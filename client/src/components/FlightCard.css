@@ -1,0 +1,79 @@
+.flight-card {
+  position: absolute;
+  top: 50%;
+  right: 40px;
+  transform: translateY(-50%);
+  width: 260px;
+  padding: 28px 24px 20px;
+  background: rgba(15, 15, 25, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  z-index: 20;
+  color: #e0e0e0;
+}
+
+.flight-card-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.flight-card-close:hover {
+  color: #fff;
+}
+
+.flight-card-callsign {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  margin-bottom: 2px;
+}
+
+.flight-card-country {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 20px;
+}
+
+.flight-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 12px;
+  margin-bottom: 16px;
+}
+
+.flight-card-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.flight-card-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.flight-card-value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.flight-card-coords {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.2);
+  text-align: right;
+}
