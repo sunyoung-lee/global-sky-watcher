@@ -12,7 +12,10 @@ export default async function handler(req, res) {
 
     const response = await fetch(OPENSKY_URL, {
       signal: controller.signal,
-      headers: { 'Accept': 'application/json' },
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'GlobalSkyWatcher/1.0',
+      },
     })
     clearTimeout(timeout)
 
