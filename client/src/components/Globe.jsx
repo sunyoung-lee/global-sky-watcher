@@ -51,7 +51,13 @@ export default function Globe({ flights = [], onFlightClick }) {
         (containerRef.current)
 
       globe.onPointClick(point => callbackRef.current?.(point))
-      globe.pointOfView({ lat: 33.5, lng: 126.5, altitude: 2.5 }, 0)
+
+      // Jeju Auto-Focus: 넓은 시점에서 시작 → 제주도로 부드럽게 줌인
+      globe.pointOfView({ lat: 20, lng: 126.5, altitude: 4 }, 0)
+      setTimeout(() => {
+        globe.pointOfView({ lat: 33.5, lng: 126.5, altitude: 2.2 }, 2000)
+      }, 300)
+
       globe.controls().autoRotate = true
       globe.controls().autoRotateSpeed = 0.3
 
