@@ -46,7 +46,6 @@ export default function Globe({ flights = [], onFlightClick }) {
         .pointColor(altitudeColor)
         .pointAltitude(d => Math.max(d.altitude / 200000, 0.01))
         .pointRadius(0.15)
-        .pointsMerge(true)
         .width(window.innerWidth)
         .height(window.innerHeight)
         (containerRef.current)

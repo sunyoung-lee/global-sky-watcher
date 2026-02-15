@@ -39,6 +39,7 @@ export default function useFlightData() {
   const wsRef = useRef(null)
   const pollingRef = useRef(null)
   const errorCountRef = useRef(0)
+  const hasDataRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -49,18 +50,21 @@ export default function useFlightData() {
       try {
         const res = await fetch(OPENSKY_URL)
         if (res.status === 429) {
-          // Rate limit — 폴링 중단 후 90초 뒤 재시도
           clearInterval(pollingRef.current)
           pollingRef.current = null
-          setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
+          // 데이터 없으면 10초 후 빠르게 재시도, 있으면 90초 백오프
+          const delay = hasDataRef.current ? RATE_LIMIT_BACKOFF : 10000
+          setTimeout(() => { if (!cancelled) startPolling() }, delay)
           return
         }
         if (!res.ok) throw new Error(`OpenSky: ${res.status}`)
         const data = await res.json()
-        setFlights(parseFlights(data))
+        const parsed = parseFlights(data)
+        setFlights(parsed)
         setConnected(true)
         setError(null)
         errorCountRef.current = 0
+        hasDataRef.current = parsed.length > 0
       } catch (err) {
         errorCountRef.current++
         setError(err.message)
