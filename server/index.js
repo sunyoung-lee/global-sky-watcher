@@ -13,6 +13,7 @@ app.use(cors())
 
 // REST 엔드포인트 (폴백용)
 let cachedFlights = []
+let lastFetchTime = 0
 
 app.get('/api/flights', (_req, res) => {
   res.json(cachedFlights)
@@ -40,10 +41,13 @@ function broadcast(data) {
   })
 }
 
-// 주기적 데이터 갱신
+// 주기적 데이터 갱신 (캐시 TTL 적용)
 async function pollFlights() {
+  const now = Date.now()
+  if (now - lastFetchTime < POLL_INTERVAL - 1000) return // 캐시 유효
   try {
     cachedFlights = await fetchFlights()
+    lastFetchTime = now
     broadcast(cachedFlights)
     console.log(`[poll] ${cachedFlights.length} flights`)
   } catch (err) {

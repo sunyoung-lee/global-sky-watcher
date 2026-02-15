@@ -5,10 +5,11 @@ const isDev = location.hostname === 'localhost'
 const WS_URL = 'ws://localhost:4000'
 const POLL_INTERVAL = 15000
 const RECONNECT_DELAY = 3000
+const MAX_FLIGHTS = 5000
 
 function parseFlights(data) {
   if (!data?.states) return []
-  return data.states
+  const all = data.states
     .filter(s => s[5] != null && s[6] != null && !s[8])
     .map(s => ({
       icao24: s[0],
@@ -20,6 +21,14 @@ function parseFlights(data) {
       velocity: s[9] || 0,
       heading: s[10] || 0,
     }))
+  // 샘플링: MAX_FLIGHTS 초과 시 균등 간격으로 추출
+  if (all.length <= MAX_FLIGHTS) return all
+  const step = all.length / MAX_FLIGHTS
+  const sampled = []
+  for (let i = 0; i < MAX_FLIGHTS; i++) {
+    sampled.push(all[Math.floor(i * step)])
+  }
+  return sampled
 }
 
 export default function useFlightData() {
