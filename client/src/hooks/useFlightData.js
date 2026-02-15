@@ -7,6 +7,7 @@ const POLL_INTERVAL = 60000
 const RECONNECT_DELAY = 3000
 const MAX_FLIGHTS = 5000
 const RATE_LIMIT_BACKOFF = 90000
+const CACHE_KEY = 'gsw_flights'
 
 function parseFlights(data) {
   if (!data?.states) return []
@@ -22,7 +23,6 @@ function parseFlights(data) {
       velocity: s[9] || 0,
       heading: s[10] || 0,
     }))
-  // 샘플링: MAX_FLIGHTS 초과 시 균등 간격으로 추출
   if (all.length <= MAX_FLIGHTS) return all
   const step = all.length / MAX_FLIGHTS
   const sampled = []
@@ -32,28 +32,43 @@ function parseFlights(data) {
   return sampled
 }
 
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    const { flights, ts } = JSON.parse(raw)
+    // 캐시 유효: 10분 이내
+    if (Date.now() - ts < 600000 && flights?.length) return flights
+  } catch { /* ignore */ }
+  return null
+}
+
+function saveCache(flights) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ flights, ts: Date.now() }))
+  } catch { /* ignore */ }
+}
+
 export default function useFlightData() {
-  const [flights, setFlights] = useState([])
+  const cached = loadCache()
+  const [flights, setFlights] = useState(cached || [])
   const [error, setError] = useState(null)
-  const [connected, setConnected] = useState(false)
+  const [connected, setConnected] = useState(!!cached)
   const wsRef = useRef(null)
   const pollingRef = useRef(null)
   const errorCountRef = useRef(0)
-  const hasDataRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
 
     async function fetchOpenSky() {
-      // 탭 비활성 시 폴링 건너뛰기
       if (document.hidden) return
       try {
         const res = await fetch(OPENSKY_URL)
         if (res.status === 429) {
           clearInterval(pollingRef.current)
           pollingRef.current = null
-          // 데이터 없으면 10초 후 빠르게 재시도, 있으면 90초 백오프
-          const delay = hasDataRef.current ? RATE_LIMIT_BACKOFF : 10000
+          const delay = flights.length > 0 ? RATE_LIMIT_BACKOFF : 15000
           setTimeout(() => { if (!cancelled) startPolling() }, delay)
           return
         }
@@ -64,11 +79,11 @@ export default function useFlightData() {
         setConnected(true)
         setError(null)
         errorCountRef.current = 0
-        hasDataRef.current = parsed.length > 0
+        saveCache(parsed)
       } catch (err) {
         errorCountRef.current++
         setError(err.message)
-        setConnected(false)
+        if (flights.length === 0) setConnected(false)
         if (errorCountRef.current >= 3) {
           clearInterval(pollingRef.current)
           pollingRef.current = null
@@ -84,7 +99,6 @@ export default function useFlightData() {
       pollingRef.current = setInterval(fetchOpenSky, interval)
     }
 
-    // 탭 가시성 변경 시 폴링 제어
     function handleVisibility() {
       if (document.hidden) {
         if (pollingRef.current) {
@@ -132,7 +146,6 @@ export default function useFlightData() {
     if (isDev) {
       connectWS()
     } else {
-      // 프로덕션: 브라우저에서 OpenSky API 직접 호출 (CORS 지원)
       startPolling()
     }
 
