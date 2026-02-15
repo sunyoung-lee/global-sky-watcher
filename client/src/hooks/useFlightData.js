@@ -9,7 +9,13 @@ const MAX_FLIGHTS = 5000
 const RATE_LIMIT_BACKOFF = 90000
 const CACHE_KEY = 'gsw_flights'
 
-// OpenSky raw → parsed (dev용), 프로덕션은 서버에서 파싱 완료
+// OpenSky 인증 (빌드 시 Vite 환경변수 주입)
+const OPENSKY_USER = import.meta.env.VITE_OPENSKY_USERNAME || ''
+const OPENSKY_PASS = import.meta.env.VITE_OPENSKY_PASSWORD || ''
+const AUTH_HEADER = OPENSKY_USER
+  ? { 'Authorization': 'Basic ' + btoa(`${OPENSKY_USER}:${OPENSKY_PASS}`) }
+  : {}
+
 function parseRaw(data) {
   if (!data?.states) return []
   return data.states
@@ -62,38 +68,19 @@ export default function useFlightData() {
   useEffect(() => {
     let cancelled = false
 
-    // 프록시 → 직접 호출 폴백 체인
-    async function tryFetch(url) {
-      const res = await fetch(url)
-      if (res.status === 429) return { rateLimited: true }
-      if (!res.ok) throw new Error(`${res.status}`)
-      const data = await res.json()
-      return { data }
-    }
-
     async function fetchFlights() {
       if (document.hidden) return
       try {
-        let result
-        if (!isDev) {
-          // 프로덕션: 프록시 먼저 시도, 실패 시 직접 호출
-          try {
-            result = await tryFetch('/api/flights')
-          } catch {
-            result = await tryFetch(OPENSKY_URL)
-          }
-        } else {
-          result = await tryFetch(OPENSKY_URL)
-        }
-
-        if (result.rateLimited) {
+        const res = await fetch(OPENSKY_URL, { headers: AUTH_HEADER })
+        if (res.status === 429) {
           clearInterval(pollingRef.current)
           pollingRef.current = null
           setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
           return
         }
-
-        const parsed = sample(Array.isArray(result.data) ? result.data : parseRaw(result.data))
+        if (!res.ok) throw new Error(`OpenSky: ${res.status}`)
+        const data = await res.json()
+        const parsed = sample(parseRaw(data))
         setFlights(parsed)
         setConnected(true)
         setError(null)
