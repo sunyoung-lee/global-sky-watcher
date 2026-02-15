@@ -1,8 +1,19 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import ReactGlobe from 'react-globe.gl'
 
 export default function Globe({ flights = [] }) {
   const globeRef = useRef()
+  const [dimensions, setDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  })
+
+  useEffect(() => {
+    const onResize = () =>
+      setDimensions({ width: window.innerWidth, height: window.innerHeight })
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
 
   useEffect(() => {
     const globe = globeRef.current
@@ -27,8 +38,8 @@ export default function Globe({ flights = [] }) {
       backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
       atmosphereColor="#3a86ff"
       atmosphereAltitude={0.25}
-      width={window.innerWidth}
-      height={window.innerHeight}
+      width={dimensions.width}
+      height={dimensions.height}
       pointsData={flights}
       pointLat="lat"
       pointLng="lng"
