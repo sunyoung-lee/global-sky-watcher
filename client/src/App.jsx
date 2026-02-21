@@ -50,10 +50,14 @@ function App() {
   const topCountries = useMemo(() => {
     const counts = {}
     flights.forEach(f => { counts[f.country] = (counts[f.country] || 0) + 1 })
-    return Object.entries(counts)
+    const sorted = Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
       .map(([country]) => country)
+    // 한국이 데이터에 있지만 상위 8에 없으면 추가
+    const korea = 'Republic of Korea'
+    if (counts[korea] && !sorted.includes(korea)) sorted.push(korea)
+    return sorted
   }, [flights])
 
   const handleSearchSubmit = useCallback(() => {

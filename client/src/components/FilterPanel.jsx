@@ -8,6 +8,15 @@ const REGIONS = [
   { id: 'namerica', label: 'N.America', bounds: { lamin: 15, lamax: 72, lomin: -170, lomax: -50 } },
 ]
 
+const SHORT_NAMES = {
+  'United States': 'USA',
+  'Republic of Korea': 'Korea',
+  'United Kingdom': 'UK',
+  'Russian Federation': 'Russia',
+  'China': 'China',
+  'United Arab Emirates': 'UAE',
+}
+
 const VERT_STATES = [
   { id: 'all', label: 'All' },
   { id: 'climbing', label: 'Climbing' },
@@ -80,7 +89,7 @@ export default function FilterPanel({ filters, onFilterChange, topCountries = []
                     className={`filter-chip ${filters.country === c ? 'selected' : ''}`}
                     onClick={() => onFilterChange({ ...filters, country: c })}
                   >
-                    {c}
+                    {SHORT_NAMES[c] || c}
                   </button>
                 ))}
               </div>
