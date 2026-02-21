@@ -1,6 +1,6 @@
 const OPENSKY_URL = 'https://opensky-network.org/api/states/all'
 
-export const config = { maxDuration: 30 }
+export const config = { maxDuration: 10 }
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -8,14 +8,13 @@ export default async function handler(req, res) {
 
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 20000)
+    const timeout = setTimeout(() => controller.abort(), 8000)
 
     const headers = {
       'Accept': 'application/json',
       'User-Agent': 'GlobalSkyWatcher/1.0',
     }
 
-    // OpenSky 인증 (Vercel 환경변수)
     const user = process.env.OPENSKY_USERNAME
     const pass = process.env.OPENSKY_PASSWORD
     if (user && pass) {
@@ -53,6 +52,9 @@ export default async function handler(req, res) {
 
     res.json(flights)
   } catch (err) {
-    res.status(502).json({ error: err.message || 'Failed to fetch flight data' })
+    const isTimeout = err.name === 'AbortError'
+    const status = isTimeout ? 504 : 502
+    const message = isTimeout ? 'OpenSky response timeout' : (err.message || 'Failed to fetch')
+    res.status(status).json({ error: message })
   }
 }

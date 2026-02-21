@@ -3,18 +3,12 @@ import { useState, useEffect, useRef } from 'react'
 const OPENSKY_URL = 'https://opensky-network.org/api/states/all'
 const isDev = location.hostname === 'localhost'
 const WS_URL = 'ws://localhost:4000'
+const API_PROXY = '/api/flights'
 const POLL_INTERVAL = 30000
 const RECONNECT_DELAY = 3000
 const MAX_FLIGHTS = 5000
 const RATE_LIMIT_BACKOFF = 90000
 const CACHE_KEY = 'gsw_flights'
-
-// OpenSky 인증 (빌드 시 Vite 환경변수 주입)
-const OPENSKY_USER = import.meta.env.VITE_OPENSKY_USERNAME || ''
-const OPENSKY_PASS = import.meta.env.VITE_OPENSKY_PASSWORD || ''
-const AUTH_HEADER = OPENSKY_USER
-  ? { 'Authorization': 'Basic ' + btoa(`${OPENSKY_USER}:${OPENSKY_PASS}`) }
-  : {}
 
 function parseRaw(data) {
   if (!data?.states) return []
@@ -71,21 +65,37 @@ export default function useFlightData() {
     async function fetchFlights() {
       if (document.hidden) return
       try {
-        const res = await fetch(OPENSKY_URL, { headers: AUTH_HEADER })
-        if (res.status === 429) {
-          clearInterval(pollingRef.current)
-          pollingRef.current = null
-          setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
-          return
+        let flights
+        if (isDev) {
+          // 개발: OpenSky 직접 호출
+          const res = await fetch(OPENSKY_URL)
+          if (res.status === 429) {
+            clearInterval(pollingRef.current)
+            pollingRef.current = null
+            setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
+            return
+          }
+          if (!res.ok) throw new Error(`OpenSky: ${res.status}`)
+          const data = await res.json()
+          flights = sample(parseRaw(data))
+        } else {
+          // 프로덕션: Vercel 프록시 경유 (CORS 우회 + 서버 인증)
+          const res = await fetch(API_PROXY)
+          if (res.status === 429) {
+            clearInterval(pollingRef.current)
+            pollingRef.current = null
+            setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
+            return
+          }
+          if (!res.ok) throw new Error(`Proxy: ${res.status}`)
+          const data = await res.json()
+          flights = Array.isArray(data) ? sample(data) : sample(parseRaw(data))
         }
-        if (!res.ok) throw new Error(`OpenSky: ${res.status}`)
-        const data = await res.json()
-        const parsed = sample(parseRaw(data))
-        setFlights(parsed)
+        setFlights(flights)
         setConnected(true)
         setError(null)
         errorCountRef.current = 0
-        saveCache(parsed)
+        saveCache(flights)
       } catch (err) {
         errorCountRef.current++
         setError(err.message)
