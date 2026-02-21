@@ -45,3 +45,11 @@
   color: rgba(255, 255, 255, 0.3);
   font-family: 'JetBrains Mono', 'SF Mono', monospace;
 }
+
+.status-ago {
+  font-size: 0.55rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.2);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}

@@ -22,12 +22,6 @@ html, body, #root {
 
 /* Mobile */
 @media (max-width: 640px) {
-  .header {
-    padding: 20px 20px;
-  }
-  .header-title {
-    font-size: 1.1rem;
-  }
   .status-bar {
     left: 20px;
     bottom: 20px;

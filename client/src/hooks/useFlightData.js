@@ -23,6 +23,9 @@ function parseRaw(data) {
       altitude: s[7] || 0,
       velocity: s[9] || 0,
       heading: s[10] || 0,
+      vertRate: s[11] ?? null,
+      squawk: s[14] || null,
+      category: s[17] ?? 0,
     }))
 }
 
@@ -55,6 +58,7 @@ export default function useFlightData() {
   const [flights, setFlights] = useState(cached || [])
   const [error, setError] = useState(null)
   const [connected, setConnected] = useState(!!cached)
+  const [lastUpdated, setLastUpdated] = useState(cached ? Date.now() : null)
   const wsRef = useRef(null)
   const pollingRef = useRef(null)
   const errorCountRef = useRef(0)
@@ -98,6 +102,7 @@ export default function useFlightData() {
         setFlights(result)
         setConnected(true)
         setError(null)
+        setLastUpdated(Date.now())
         errorCountRef.current = 0
         saveCache(result)
       } catch (err) {
@@ -177,5 +182,5 @@ export default function useFlightData() {
     }
   }, [])
 
-  return { flights, error, connected }
+  return { flights, error, connected, lastUpdated }
 }

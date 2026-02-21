@@ -9,7 +9,7 @@ function altitudeColor(d) {
   return `rgb(${r},${g},${b})`
 }
 
-export default function Globe({ flights = [], onFlightClick }) {
+export default function Globe({ flights = [], onFlightClick, focusFlight }) {
   const containerRef = useRef()
   const globeRef = useRef(null)
   const callbackRef = useRef(onFlightClick)
@@ -87,6 +87,15 @@ export default function Globe({ flights = [], onFlightClick }) {
       globeRef.current.pointsData(flights)
     }
   }, [flights])
+
+  useEffect(() => {
+    if (focusFlight && globeRef.current) {
+      globeRef.current.pointOfView(
+        { lat: focusFlight.lat, lng: focusFlight.lng, altitude: 1.8 },
+        1000
+      )
+    }
+  }, [focusFlight])
 
   if (renderFailed) {
     return (

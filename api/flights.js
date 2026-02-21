@@ -52,6 +52,9 @@ export default async function handler(request) {
         altitude: s[7] || 0,
         velocity: s[9] || 0,
         heading: s[10] || 0,
+        vertRate: s[11] ?? null,
+        squawk: s[14] || null,
+        category: s[17] ?? 0,
       }))
 
     return new Response(JSON.stringify(flights), { headers: corsHeaders })

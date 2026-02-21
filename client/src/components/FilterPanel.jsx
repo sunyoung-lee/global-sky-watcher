@@ -8,6 +8,13 @@ const REGIONS = [
   { id: 'namerica', label: 'N.America', bounds: { lamin: 15, lamax: 72, lomin: -170, lomax: -50 } },
 ]
 
+const VERT_STATES = [
+  { id: 'all', label: 'All' },
+  { id: 'climbing', label: 'Climbing' },
+  { id: 'descending', label: 'Descending' },
+  { id: 'cruising', label: 'Cruising' },
+]
+
 export default function FilterPanel({ filters, onFilterChange }) {
   const [open, setOpen] = useState(false)
 
@@ -39,6 +46,20 @@ export default function FilterPanel({ filters, onFilterChange }) {
                   onClick={() => onFilterChange({ ...filters, region: r.id })}
                 >
                   {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="filter-section">
+            <div className="filter-label">Vertical</div>
+            <div className="filter-chips">
+              {VERT_STATES.map(v => (
+                <button
+                  key={v.id}
+                  className={`filter-chip ${filters.vertState === v.id ? 'selected' : ''}`}
+                  onClick={() => onFilterChange({ ...filters, vertState: v.id })}
+                >
+                  {v.label}
                 </button>
               ))}
             </div>
