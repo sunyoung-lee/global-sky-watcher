@@ -62,40 +62,44 @@ export default function useFlightData() {
   useEffect(() => {
     let cancelled = false
 
+    async function fetchDirect() {
+      // OpenSky 직접 호출 (Auth 헤더 없이 — simple CORS request)
+      const res = await fetch(OPENSKY_URL)
+      if (res.status === 429) return 'rate-limited'
+      if (!res.ok) throw new Error(`OpenSky: ${res.status}`)
+      const data = await res.json()
+      return sample(parseRaw(data))
+    }
+
+    async function fetchProxy() {
+      const res = await fetch(API_PROXY)
+      if (res.status === 429) return 'rate-limited'
+      if (!res.ok) throw new Error(`Proxy: ${res.status}`)
+      const data = await res.json()
+      return Array.isArray(data) ? sample(data) : sample(parseRaw(data))
+    }
+
     async function fetchFlights() {
       if (document.hidden) return
       try {
-        let flights
-        if (isDev) {
-          // 개발: OpenSky 직접 호출
-          const res = await fetch(OPENSKY_URL)
-          if (res.status === 429) {
-            clearInterval(pollingRef.current)
-            pollingRef.current = null
-            setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
-            return
-          }
-          if (!res.ok) throw new Error(`OpenSky: ${res.status}`)
-          const data = await res.json()
-          flights = sample(parseRaw(data))
-        } else {
-          // 프로덕션: Vercel 프록시 경유 (CORS 우회 + 서버 인증)
-          const res = await fetch(API_PROXY)
-          if (res.status === 429) {
-            clearInterval(pollingRef.current)
-            pollingRef.current = null
-            setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
-            return
-          }
-          if (!res.ok) throw new Error(`Proxy: ${res.status}`)
-          const data = await res.json()
-          flights = Array.isArray(data) ? sample(data) : sample(parseRaw(data))
+        // 1차: OpenSky 직접 (CORS OK, Auth 없이), 실패 시 2차: 프록시
+        let result
+        try {
+          result = await fetchDirect()
+        } catch {
+          result = await fetchProxy()
         }
-        setFlights(flights)
+        if (result === 'rate-limited') {
+          clearInterval(pollingRef.current)
+          pollingRef.current = null
+          setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
+          return
+        }
+        setFlights(result)
         setConnected(true)
         setError(null)
         errorCountRef.current = 0
-        saveCache(flights)
+        saveCache(result)
       } catch (err) {
         errorCountRef.current++
         setError(err.message)
