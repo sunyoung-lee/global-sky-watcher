@@ -94,6 +94,7 @@ export default function useFlightData() {
           result = await fetchProxy()
         }
         if (result === 'rate-limited') {
+          setError('Rate limited — retrying soon')
           clearInterval(pollingRef.current)
           pollingRef.current = null
           setTimeout(() => { if (!cancelled) startPolling() }, RATE_LIMIT_BACKOFF)
