@@ -70,19 +70,19 @@ export default function FlightCard({ flight, onClose }) {
         {flight.country}
       </div>
 
-      {(route || routeLoading) && (
-        <div className="flight-card-route">
-          {routeLoading ? (
-            <span className="flight-card-route-loading">Loading route…</span>
-          ) : route ? (
-            <>
-              <span className="flight-card-route-apt">{route.departure || '???'}</span>
-              <span className="flight-card-route-arrow">→</span>
-              <span className="flight-card-route-apt">{route.arrival || '???'}</span>
-            </>
-          ) : null}
-        </div>
-      )}
+      <div className="flight-card-route">
+        {routeLoading ? (
+          <span className="flight-card-route-loading">Loading route…</span>
+        ) : route ? (
+          <>
+            <span className="flight-card-route-apt">{route.departure || '???'}</span>
+            <span className="flight-card-route-arrow">→</span>
+            <span className="flight-card-route-apt">{route.arrival || '???'}</span>
+          </>
+        ) : (
+          <span className="flight-card-route-loading">No route data</span>
+        )}
+      </div>
 
       <div className="flight-card-grid">
         <div className="flight-card-item">

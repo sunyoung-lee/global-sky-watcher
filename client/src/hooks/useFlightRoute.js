@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 const PROXY_URL = '/api/route'
 const DIRECT_URL = 'https://opensky-network.org/api/flights/aircraft'
 const routeCache = new Map()
+const FETCH_TIMEOUT = 8000
 
 export default function useFlightRoute(icao24) {
   const [route, setRoute] = useState(null)
@@ -11,30 +12,34 @@ export default function useFlightRoute(icao24) {
   useEffect(() => {
     if (!icao24) {
       setRoute(null)
+      setLoading(false)
       return
     }
 
     if (routeCache.has(icao24)) {
       setRoute(routeCache.get(icao24))
+      setLoading(false)
       return
     }
 
     let cancelled = false
+    const controller = new AbortController()
     setLoading(true)
 
     const now = Math.floor(Date.now() / 1000)
     const begin = now - 86400
+    const signal = controller.signal
 
     async function fetchRoute() {
-      // 1차: 프록시 경유, 2차: 직접 호출 폴백
       let data
       try {
-        const res = await fetch(`${PROXY_URL}?icao24=${icao24}`)
+        const res = await fetch(`${PROXY_URL}?icao24=${icao24}`, { signal })
         if (!res.ok) throw new Error(`${res.status}`)
         data = await res.json()
       } catch {
+        if (signal.aborted) return null
         try {
-          const res = await fetch(`${DIRECT_URL}?icao24=${icao24}&begin=${begin}&end=${now}`)
+          const res = await fetch(`${DIRECT_URL}?icao24=${icao24}&begin=${begin}&end=${now}`, { signal })
           if (!res.ok) throw new Error(`${res.status}`)
           data = await res.json()
         } catch {
@@ -52,14 +57,25 @@ export default function useFlightRoute(icao24) {
       return null
     }
 
-    fetchRoute().then(info => {
-      if (cancelled) return
-      routeCache.set(icao24, info)
-      setRoute(info)
-      setLoading(false)
-    })
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
 
-    return () => { cancelled = true }
+    fetchRoute()
+      .then(info => {
+        if (cancelled) return
+        routeCache.set(icao24, info)
+        setRoute(info)
+      })
+      .catch(() => {})
+      .finally(() => {
+        clearTimeout(timeout)
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+      controller.abort()
+      clearTimeout(timeout)
+    }
   }, [icao24])
 
   return { route, loading }
