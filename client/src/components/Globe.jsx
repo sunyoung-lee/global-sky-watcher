@@ -9,10 +9,6 @@ function altitudeColor(d) {
   return `rgb(${r},${g},${b})`
 }
 
-function createAirplaneSvg(color, heading) {
-  return `<svg width="12" height="11" viewBox="0 0 12 11" style="transform:rotate(${heading}deg);transform-origin:6px 5px"><path d="M6 0L7.5 4 12 5 7.5 6 8 10.5 6 9 4 10.5 4.5 6 0 5 4.5 4Z" fill="${color}" opacity=".85"/></svg>`
-}
-
 export default function Globe({ flights = [], onFlightClick, focusFlight }) {
   const containerRef = useRef()
   const globeRef = useRef(null)
@@ -20,7 +16,6 @@ export default function Globe({ flights = [], onFlightClick, focusFlight }) {
   callbackRef.current = onFlightClick
   const [renderFailed, setRenderFailed] = useState(false)
   const historyRef = useRef({})
-  const elCacheRef = useRef(new Map())
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -35,25 +30,12 @@ export default function Globe({ flights = [], onFlightClick, focusFlight }) {
           .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
           .atmosphereColor('#3a86ff')
           .atmosphereAltitude(0.25)
-          // 비행기 아이콘 (HTML SVG)
-          .htmlElementsData([])
-          .htmlLat('lat')
-          .htmlLng('lng')
-          .htmlAltitude(0.005)
-          .htmlTransitionDuration(800)
-          .htmlElement(d => {
-            const cache = elCacheRef.current
-            let el = cache.get(d.icao24)
-            if (el) {
-              el.innerHTML = createAirplaneSvg(altitudeColor(d), d.heading)
-              return el
-            }
-            el = document.createElement('div')
-            el.innerHTML = createAirplaneSvg(altitudeColor(d), d.heading)
-            el.style.cursor = 'pointer'
-            cache.set(d.icao24, el)
-            return el
-          })
+          // 비행기 도트
+          .pointLat('lat')
+          .pointLng('lng')
+          .pointColor(altitudeColor)
+          .pointAltitude(0.001)
+          .pointRadius(0.25)
           // 비행 궤적선
           .pathsData([])
           .pathPoints('points')
@@ -66,7 +48,7 @@ export default function Globe({ flights = [], onFlightClick, focusFlight }) {
           .height(window.innerHeight)
           (containerRef.current)
 
-        globe.onHtmlElementClick(point => {
+        globe.onPointClick(point => {
           callbackRef.current?.(point)
           globe.pointOfView({ lat: point.lat, lng: point.lng, altitude: 1.8 }, 1000)
         })
@@ -97,7 +79,7 @@ export default function Globe({ flights = [], onFlightClick, focusFlight }) {
       window.removeEventListener('resize', onResize)
       if (globe) {
         try {
-          globe.htmlElementsData([])
+          globe.pointsData([])
           globe.pathsData([])
           globe.controls().dispose?.()
           globe.renderer().dispose()
@@ -107,15 +89,14 @@ export default function Globe({ flights = [], onFlightClick, focusFlight }) {
         if (container) container.innerHTML = ''
       }
       globeRef.current = null
-      elCacheRef.current.clear()
     }
   }, [])
 
   useEffect(() => {
     if (!globeRef.current) return
 
-    // 비행기 아이콘 업데이트
-    globeRef.current.htmlElementsData(flights)
+    // 비행기 도트 업데이트
+    globeRef.current.pointsData(flights)
 
     // 궤적 히스토리 추적
     const history = historyRef.current
@@ -135,9 +116,6 @@ export default function Globe({ flights = [], onFlightClick, focusFlight }) {
     // 비활성 항공편 정리
     for (const icao of Object.keys(history)) {
       if (!activeIcaos.has(icao)) delete history[icao]
-    }
-    for (const icao of elCacheRef.current.keys()) {
-      if (!activeIcaos.has(icao)) elCacheRef.current.delete(icao)
     }
 
     // 궤적선 업데이트
