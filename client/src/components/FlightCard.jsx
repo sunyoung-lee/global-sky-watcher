@@ -29,6 +29,7 @@ export default function FlightCard({ flight, onClose }) {
           <span className="flight-card-value">{flight.icao24}</span>
         </div>
       </div>
+      <div className="flight-card-divider" />
       <div className="flight-card-coords">
         {flight.lat.toFixed(2)}°, {flight.lng.toFixed(2)}°
       </div>
