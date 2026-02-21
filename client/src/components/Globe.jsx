@@ -38,16 +38,22 @@ export default function Globe({ flights = [], onFlightClick }) {
           .height(window.innerHeight)
           (containerRef.current)
 
-        globe.onPointClick(point => callbackRef.current?.(point))
+        globe.onPointClick(point => {
+          callbackRef.current?.(point)
+          // 클릭한 항공편 위치로 부드럽게 이동
+          globe.pointOfView({ lat: point.lat, lng: point.lng, altitude: 1.8 }, 1000)
+        })
 
         // Jeju Auto-Focus: 넓은 시점에서 시작 → 제주도로 부드럽게 줌인
-        globe.pointOfView({ lat: 20, lng: 126.5, altitude: 4 }, 0)
+        globe.pointOfView({ lat: 20, lng: 126.5, altitude: 3.5 }, 0)
         setTimeout(() => {
-          globe.pointOfView({ lat: 33.5, lng: 126.5, altitude: 2.2 }, 2000)
-        }, 300)
+          globe.pointOfView({ lat: 33.5, lng: 126.5, altitude: 2.0 }, 2500)
+        }, 500)
 
         globe.controls().autoRotate = true
-        globe.controls().autoRotateSpeed = 0.3
+        globe.controls().autoRotateSpeed = 0.2
+        globe.controls().enableDamping = true
+        globe.controls().dampingFactor = 0.1
 
         globeRef.current = globe
       } catch {

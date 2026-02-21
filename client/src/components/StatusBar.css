@@ -14,11 +14,21 @@
   height: 8px;
   border-radius: 50%;
   background: #555;
+  transition: all 0.3s;
 }
 
 .status-dot.live {
   background: #00e676;
-  box-shadow: 0 0 6px #00e676;
+  box-shadow: 0 0 8px #00e676;
+}
+
+.status-dot.pulse {
+  animation: dot-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
 }
 
 .status-text {
@@ -33,4 +43,5 @@
   font-weight: 400;
   letter-spacing: 0.04em;
   color: rgba(255, 255, 255, 0.3);
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
 }
