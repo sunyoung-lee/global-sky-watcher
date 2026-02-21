@@ -1,6 +1,38 @@
 import useFlightRoute from '../hooks/useFlightRoute'
 import './FlightCard.css'
 
+// 국가명 → ISO 3166-1 alpha-2
+const COUNTRY_CODES = {
+  'Afghanistan': 'AF', 'Albania': 'AL', 'Algeria': 'DZ', 'Argentina': 'AR',
+  'Australia': 'AU', 'Austria': 'AT', 'Bahrain': 'BH', 'Bangladesh': 'BD',
+  'Belgium': 'BE', 'Brazil': 'BR', 'Canada': 'CA', 'Chile': 'CL',
+  'China': 'CN', 'Colombia': 'CO', 'Croatia': 'HR', 'Czech Republic': 'CZ',
+  'Czechia': 'CZ', 'Denmark': 'DK', 'Egypt': 'EG', 'Estonia': 'EE',
+  'Ethiopia': 'ET', 'Finland': 'FI', 'France': 'FR', 'Germany': 'DE',
+  'Greece': 'GR', 'Hong Kong': 'HK', 'Hungary': 'HU', 'Iceland': 'IS',
+  'India': 'IN', 'Indonesia': 'ID', 'Iran, Islamic Republic of': 'IR',
+  'Iraq': 'IQ', 'Ireland': 'IE', 'Israel': 'IL', 'Italy': 'IT',
+  'Japan': 'JP', 'Jordan': 'JO', 'Kazakhstan': 'KZ', 'Kenya': 'KE',
+  'Kuwait': 'KW', 'Latvia': 'LV', 'Lithuania': 'LT', 'Luxembourg': 'LU',
+  'Malaysia': 'MY', 'Mexico': 'MX', 'Morocco': 'MA', 'Netherlands': 'NL',
+  'New Zealand': 'NZ', 'Nigeria': 'NG', 'Norway': 'NO', 'Oman': 'OM',
+  'Pakistan': 'PK', 'Panama': 'PA', 'Peru': 'PE', 'Philippines': 'PH',
+  'Poland': 'PL', 'Portugal': 'PT', 'Qatar': 'QA', 'Romania': 'RO',
+  'Republic of Korea': 'KR', 'Republic of Moldova': 'MD',
+  'Russian Federation': 'RU', 'Saudi Arabia': 'SA', 'Serbia': 'RS',
+  'Singapore': 'SG', 'Slovakia': 'SK', 'Slovenia': 'SI', 'South Africa': 'ZA',
+  'Spain': 'ES', 'Sri Lanka': 'LK', 'Sweden': 'SE', 'Switzerland': 'CH',
+  'Taiwan': 'TW', 'Thailand': 'TH', 'Turkey': 'TR', 'Türkiye': 'TR',
+  'Ukraine': 'UA', 'United Arab Emirates': 'AE', 'United Kingdom': 'GB',
+  'United States': 'US', 'Uzbekistan': 'UZ', 'Vietnam': 'VN',
+}
+
+function countryFlag(country) {
+  const code = COUNTRY_CODES[country]
+  if (!code) return ''
+  return String.fromCodePoint(...[...code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65))
+}
+
 const CATEGORY_NAMES = {
   1: 'No ADS-B', 2: 'Light', 3: 'Small', 4: 'Large',
   5: 'High Vortex', 6: 'Heavy', 7: 'High Perf', 8: 'Rotorcraft',
@@ -33,7 +65,10 @@ export default function FlightCard({ flight, onClose }) {
       <div className="flight-card-callsign">
         {flight.callsign || 'N/A'}
       </div>
-      <div className="flight-card-country">{flight.country}</div>
+      <div className="flight-card-country">
+        {countryFlag(flight.country) && <span className="flight-card-flag">{countryFlag(flight.country)}</span>}
+        {flight.country}
+      </div>
 
       {(route || routeLoading) && (
         <div className="flight-card-route">
