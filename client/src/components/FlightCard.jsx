@@ -1,3 +1,4 @@
+import useFlightRoute from '../hooks/useFlightRoute'
 import './FlightCard.css'
 
 const CATEGORY_NAMES = {
@@ -24,6 +25,7 @@ export default function FlightCard({ flight, onClose }) {
   const speedKmh = (flight.velocity * 3.6).toFixed(0)
   const vr = vertRateInfo(flight.vertRate)
   const categoryName = CATEGORY_NAMES[flight.category]
+  const { route, loading: routeLoading } = useFlightRoute(flight.icao24)
 
   return (
     <div className="flight-card">
@@ -32,6 +34,21 @@ export default function FlightCard({ flight, onClose }) {
         {flight.callsign || 'N/A'}
       </div>
       <div className="flight-card-country">{flight.country}</div>
+
+      {(route || routeLoading) && (
+        <div className="flight-card-route">
+          {routeLoading ? (
+            <span className="flight-card-route-loading">Loading route…</span>
+          ) : route ? (
+            <>
+              <span className="flight-card-route-apt">{route.departure || '???'}</span>
+              <span className="flight-card-route-arrow">→</span>
+              <span className="flight-card-route-apt">{route.arrival || '???'}</span>
+            </>
+          ) : null}
+        </div>
+      )}
+
       <div className="flight-card-grid">
         <div className="flight-card-item">
           <span className="flight-card-label">Altitude</span>

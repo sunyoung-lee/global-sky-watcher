@@ -8,7 +8,7 @@ import FilterPanel, { REGIONS } from './components/FilterPanel'
 import Toast from './components/Toast'
 import ErrorBoundary from './components/ErrorBoundary'
 
-const DEFAULT_FILTERS = { altMin: 0, region: 'all', vertState: 'all' }
+const DEFAULT_FILTERS = { altMin: 0, region: 'all', vertState: 'all', country: null }
 
 function classifyVert(vertRate) {
   if (vertRate == null) return 'cruising'
@@ -41,8 +41,20 @@ function App() {
     if (filters.vertState !== 'all') {
       result = result.filter(f => classifyVert(f.vertRate) === filters.vertState)
     }
+    if (filters.country) {
+      result = result.filter(f => f.country === filters.country)
+    }
     return result
   }, [flights, filters])
+
+  const topCountries = useMemo(() => {
+    const counts = {}
+    flights.forEach(f => { counts[f.country] = (counts[f.country] || 0) + 1 })
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([country]) => country)
+  }, [flights])
 
   const handleSearchSubmit = useCallback(() => {
     if (!searchQuery.trim()) return
@@ -83,7 +95,7 @@ function App() {
         onSearchSubmit={handleSearchSubmit}
       />
       <StatusBar connected={connected} flightCount={filtered.length} lastUpdated={lastUpdated} />
-      <FilterPanel filters={filters} onFilterChange={setFilters} />
+      <FilterPanel filters={filters} onFilterChange={setFilters} topCountries={topCountries} />
       {selected && <FlightCard flight={selected} onClose={() => setSelected(null)} />}
       {error && <Toast message={`Connection issue: ${error}`} />}
     </div>

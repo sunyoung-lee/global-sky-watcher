@@ -15,7 +15,7 @@ const VERT_STATES = [
   { id: 'cruising', label: 'Cruising' },
 ]
 
-export default function FilterPanel({ filters, onFilterChange }) {
+export default function FilterPanel({ filters, onFilterChange, topCountries = [] }) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -64,6 +64,28 @@ export default function FilterPanel({ filters, onFilterChange }) {
               ))}
             </div>
           </div>
+          {topCountries.length > 0 && (
+            <div className="filter-section">
+              <div className="filter-label">Country</div>
+              <div className="filter-chips">
+                <button
+                  className={`filter-chip ${!filters.country ? 'selected' : ''}`}
+                  onClick={() => onFilterChange({ ...filters, country: null })}
+                >
+                  All
+                </button>
+                {topCountries.map(c => (
+                  <button
+                    key={c}
+                    className={`filter-chip ${filters.country === c ? 'selected' : ''}`}
+                    onClick={() => onFilterChange({ ...filters, country: c })}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
       <button

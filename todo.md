@@ -40,6 +40,13 @@
 - [x] 🟡 상승/하강 필터 — FilterPanel에 Climbing/Descending/Cruising 칩 추가
 - [x] 🟡 키보드 단축키 — ESC 카드 닫기, / 검색 포커스
 
+## v5.0 시각화 + 데이터 (Visual & Data) ✅
+
+- [x] 🔴 비행기 SVG 아이콘 — heading 방향 회전, 고도별 색상
+- [x] 🔴 비행 궤적선 (Breadcrumb Trail) — pathsData 기반 폴리라인
+- [x] 🔴 국적별 필터 — 상위 8개국 칩 자동 생성
+- [x] 🟡 출발지/목적지 표시 — OpenSky flights API 온디맨드 조회
+
 ## Backlog — 우선순위순
 
 - [ ] 🔴 GitHub Actions CI: `npm run build` + curl smoke test 자동화
@@ -47,7 +54,6 @@
 - [ ] 🟡 항공편 추적 모드 (선택한 항공편 카메라 자동 추적)
 - [ ] 🟡 항공사 그룹핑 (ICAO 접두사: KE=대한항공, OZ=아시아나)
 - [ ] 🟡 브라우저 호환성 매트릭스 작성 (Chrome/Safari/Firefox/Whale/Edge)
-- [ ] 🟢 비행 궤적선 (Breadcrumb Trail) — 최근 60초 위치 기록 폴리라인
 - [ ] 🟢 야간 도시 불빛 레이어 추가
 - [ ] 🟢 ARIA 라벨 및 접근성 개선
 
