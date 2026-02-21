@@ -1,19 +1,19 @@
 # Global Sky Watcher — Project Retrospective
 
-## 프로젝트 종합 평가: 85 / 100
+## 프로젝트 종합 평가: 86 / 100
 
-| 평가 항목 | Day 1 (v1.0) | Day 2 (v2.0) | Day 3 (v3.0) | Day 4 (v4.0) | 변화 | 비고 |
-|-----------|:---:|:---:|:---:|:---:|:---:|------|
-| PRD 충실도 | 7/10 | 9/10 | 10/10 | 10/10 | — | v4 확장 기능까지 전체 구현 |
-| CLAUDE.md 준수 | 8/10 | 8/10 | 9/10 | 9/10 | — | 디자인 토큰 일관성 유지 |
-| 기능 완성도 | 6/10 | 8/10 | 9/10 | 10/10 | +1 | v4.0 6/6 완료. 검색, 필터, 단축키 추가 |
-| UX / 디자인 | 5/10 | 6/10 | 8/10 | 9/10 | +1 | 검색 UI, 상승/하강 색상, 데이터 신선도 표시 |
-| 보안 | 7/10 | 6/10 | 7/10 | 7/10 | — | 변동 없음 |
-| 테스트 | 2/10 | 2/10 | 3/10 | 3/10 | — | vite build 검증 + curl 스모크 테스트 |
-| 성능 | 5/10 | 7/10 | 8/10 | 8/10 | — | 필터 vertState useMemo 확장 |
-| DX (개발경험) | 8/10 | 8/10 | 8/10 | 9/10 | +1 | 키보드 단축키(/, ESC)로 개발자 UX 향상 |
-| 배포 / 인프라 | 7/10 | 6/10 | 8/10 | 8/10 | — | Edge 프록시 유지, 안정 배포 |
-| **종합** | **55/100** | **62/100** | **78/100** | **85/100** | **+7** | **v4.0 기능 심화 완료. 검색+필터+단축키** |
+| 평가 항목 | Day 1 (v1.0) | Day 2 (v2.0) | Day 3 (v3.0) | Day 4 (v4.0) | Day 5 (v5.0) | 변화 | 비고 |
+|-----------|:---:|:---:|:---:|:---:|:---:|:---:|------|
+| PRD 충실도 | 7/10 | 9/10 | 10/10 | 10/10 | 10/10 | — | Backlog 항목까지 선제 구현 |
+| CLAUDE.md 준수 | 8/10 | 8/10 | 9/10 | 9/10 | 9/10 | — | 사이안 네온, 글래스모피즘, 모노 폰트 일관 유지 |
+| 기능 완성도 | 6/10 | 8/10 | 9/10 | 10/10 | 10/10 | — | v5.0 4/4 완료. 궤적선, 국적필터, 국기, 라우트 프록시 |
+| UX / 디자인 | 5/10 | 6/10 | 8/10 | 9/10 | 9/10 | — | 국기 이모지, 라우트 표시 추가. SVG 아이콘은 안정성 위해 revert |
+| 보안 | 7/10 | 6/10 | 7/10 | 7/10 | 7/10 | — | Edge 프록시에서만 인증 처리 |
+| 테스트 | 2/10 | 2/10 | 3/10 | 3/10 | 3/10 | — | 자동화 테스트 미착수. vite build 검증만 수행 |
+| 성능 | 5/10 | 7/10 | 8/10 | 8/10 | 8/10 | — | AbortController 정리, 라우트 캐싱(Map), 궤적 히스토리 제한(5점) |
+| DX (개발경험) | 8/10 | 8/10 | 8/10 | 9/10 | 9/10 | — | 키보드 단축키 유지, 에러 메시지 개선 |
+| 배포 / 인프라 | 7/10 | 6/10 | 8/10 | 8/10 | 9/10 | +1 | api/route.js Edge 프록시 추가, rate limit UX 개선 |
+| **종합** | **55/100** | **62/100** | **78/100** | **85/100** | **86/100** | **+1** | **v5.0 시각화 + 데이터 완료. 궤적선·국기·라우트** |
 
 ---
 
@@ -227,6 +227,83 @@ v4.0은 기존 데이터 구조를 확장하는 "깊이 있는 개선" 세션이
 
 ---
 
+### 2026-02-21 (Day 5, 동일자 최종 세션)
+
+**한줄평**: v5.0 시각화 + 데이터 완성 — 비행 궤적선, 국적 필터, 국기 이모지, 라우트 프록시
+
+**금일 목표**: v5.0 전 항목 구현 — SVG 아이콘, 궤적선, 국적 필터, 출발지/목적지 + 국기 표시
+
+**소요 시간**: 약 1시간
+
+**목표 달성도**:
+
+| 항목 | 점수 | 변화 | 상세 |
+|------|------|:---:|------|
+| PRD 충실도 | 10/10 | — | Backlog 기능까지 선제 구현. 로드맵 완전 초과 달성 |
+| CLAUDE.md 준수 | 9/10 | — | 사이안 궤적선(rgba(0,229,255,0.15)), 글래스모피즘 유지, 모노 데이터 |
+| 기능 완성도 | 10/10 | — | v5.0 4/4 완료. 궤적선·국적필터·국기·라우트 프록시. SVG 아이콘은 안정성 위해 revert |
+| UX / 디자인 | 9/10 | — | 국기 이모지, 궤적선 시각화, 라우트(DEP→ARR) 표시. SVG 아이콘 revert로 10점 미달 |
+| 보안 | 7/10 | — | api/route.js도 서버 인증 처리. 클라이언트 노출 없음 |
+| 테스트 | 3/10 | — | 매 변경 vite build 검증. 자동화 테스트 여전히 미착수 |
+| 성능 | 8/10 | — | AbortController 타임아웃(8초), 라우트 캐싱(Map), 궤적 히스토리 제한(5점/항공편) |
+| DX | 9/10 | — | rate limit 에러 메시지 명확화("Rate limited — retrying soon") |
+| 배포 / 인프라 | 9/10 | +1 | api/route.js 제2 Edge 프록시 추가. CORS 프록시 이중화(states + flights) |
+
+**총평**:
+v5.0은 시각화 깊이와 데이터 접근성을 동시에 확장한 세션이다. **비행 궤적선**(pathsData)은 각 항공편의 최근 5개 좌표를 사이안 폴리라인으로 표시하여 이동 방향을 직관적으로 파악할 수 있게 했다. **국적별 필터**는 실시간 데이터에서 상위 8개국을 자동 추출하여 칩으로 생성하고, 한국(Republic of Korea)은 상위 8에 없더라도 항상 포함하도록 보장했다. **국기 이모지**는 60개국 국가명→ISO 코드 매핑으로 FlightCard에 시각적 아이덴티티를 추가했다. **출발지/목적지**는 OpenSky flights API를 Vercel Edge 프록시(api/route.js)로 경유하여 CORS를 해결하고, AbortController + 8초 타임아웃으로 무한 로딩을 방지했다. SVG 비행기 아이콘은 htmlElementsData(CSS2DRenderer) 렌더링 불안정으로 revert하고 검증된 pointsData를 유지 — 안정성 우선 판단.
+
+**잘된 점**:
+- **안정성 우선 판단**: SVG 아이콘(htmlElementsData)이 프로덕션에서 렌더링 실패 → 즉시 pointsData로 revert. 궤적선(pathsData)은 정상 유지
+- **Edge 프록시 이중화**: api/flights.js(states) + api/route.js(flights) 두 개의 Edge 프록시로 OpenSky API 전면 서버 경유
+- **국가명 정규화**: SHORT_NAMES 매핑(Republic of Korea→Korea, United States→USA)으로 UI 가독성 향상
+- **방어적 코딩**: AbortController 타임아웃, finally 블록 loading 해제, cancelled 플래그로 race condition 방지
+- **Rate limit UX**: "OFFLINE" 대신 "Rate limited — retrying soon" 구체적 메시지로 사용자 안내
+
+**개선할 점**:
+- **SVG 아이콘 렌더링 실패**: globe.gl의 htmlElementsData(CSS2DRenderer)가 5000+ 엘리먼트에서 불안정. DOM 기반 렌더링 한계
+- **OpenSky flights API 신뢰성**: 현재 비행 중인 항공편의 출발지/목적지가 null인 경우가 많음. API 특성상 완료된 비행에만 데이터 존재
+- **Rate limit 빈번 발생**: OpenSky 무인증 제한(10req/min)이 라우트 조회 + 상태 폴링을 동시에 감당 못함
+- **자동화 테스트 5일째 미착수**: 테스트 부채가 누적 중. 최소 빌드 + API 스모크 테스트 시급
+
+**미해결 과제**:
+- htmlElementsData 기반 비행기 아이콘 렌더링 안정화 방안 조사 (Custom WebGL layer 또는 Three.js 직접 제어)
+- OpenSky flights API의 rate limit 독립성 확인 (states와 flights가 같은 쿼터 공유하는지)
+- 라우트 데이터 없는 항공편에 대한 대안 데이터소스 조사 (FlightRadar24, AviationStack 등)
+- GitHub Actions CI 자동화 (5일째 미착수)
+
+**AI 자동화 제안**:
+- globe.gl의 `customLayerData` + Three.js InstancedMesh로 비행기 아이콘 구현 — CSS2DRenderer 대비 GPU 가속, 대량 렌더링 가능
+- OpenSky API 호출 횟수를 추적하는 미들웨어 추가 → rate limit 사전 감지
+- `api/route.js`에 Vercel KV 또는 Edge Config 기반 서버사이드 라우트 캐시 추가 — 동일 icao24 재조회 방지
+
+**AI 협업 제안**:
+- 새로운 globe.gl 레이어 도입 시 AI가 브라우저 렌더링 엔진(WebGL vs CSS2D vs SVG) 비교표 사전 제공
+- 외부 API 프록시 추가 시 AI가 CORS·인증·rate limit·캐싱 4대 체크리스트 자동 생성
+- 국가 코드 매핑 누락 시 AI가 OpenSky origin_country 전체 목록 대비 커버리지 분석
+
+**Action Items**:
+1. [ ] GitHub Actions CI: `npm run build` + Vercel preview URL curl 테스트 (AI 자동화)
+2. [ ] pre-commit hook: `cd client && npm run build` 검증 (AI 자동화)
+3. [ ] 비행기 아이콘: customLayerData + InstancedMesh 프로토타입 (AI 협업)
+4. [ ] api/route.js에 Vercel KV 라우트 캐시 추가 (AI 자동화)
+5. [ ] OpenSky rate limit 독립성 테스트: states vs flights 쿼터 분리 여부 (AI 협업)
+6. [x] 라우트 프록시 CORS 해결 — api/route.js Edge 함수 추가 (Day 5 완료)
+7. [x] rate limit 시 사용자 안내 메시지 개선 (Day 5 완료)
+
+**핵심 교훈사항**:
+1. **CSS2DRenderer는 대량 DOM에 부적합**: globe.gl의 htmlElementsData는 내부적으로 CSS2DRenderer를 사용하며, 5000+ DOM 엘리먼트를 WebGL 캔버스 위에 오버레이한다. 프로덕션 환경에서 렌더링이 완전히 실패할 수 있으므로, 대량 데이터는 WebGL 네이티브 레이어(pointsData, customLayerData)를 사용할 것.
+2. **프록시 엔드포인트 추가 = rate limit 예산 분배**: 새로운 API 엔드포인트를 프록시로 추가할 때, 기존 엔드포인트와 rate limit 쿼터를 공유하는지 반드시 확인할 것. 공유 시 우선순위 기반 호출 전략 필요.
+3. **revert는 올바른 엔지니어링 판단**: 새 기능이 프로덕션에서 실패하면 디버깅에 시간을 쓰기보다 즉시 revert하고 검증된 방식으로 복구하는 것이 사용자 경험과 개발 효율 모두에 유리하다.
+4. **AbortController는 모든 fetch에 기본**: 타임아웃 없는 fetch는 무한 로딩의 원인. useEffect + fetch 조합에서는 AbortController + cleanup return을 표준 패턴으로 적용할 것.
+
+**글로벌 컨피그 설정 개선사항**:
+- CLAUDE.md Tech Stack에 `api/route.js` (라우트 프록시) 추가 권장
+- CLAUDE.md에 "외부 API 프록시 추가 시 4대 체크리스트(CORS·인증·rate limit·캐싱)" 추가 권장
+- CLAUDE.md에 "globe.gl 레이어 선택 가이드(pointsData vs htmlElementsData vs customLayerData)" 추가 권장
+- 국가 코드 매핑 테이블을 별도 유틸(countryCodes.js)로 분리하여 FilterPanel·FlightCard 공유 권장
+
+---
+
 ## 버전 히스토리
 
 | 버전 | 날짜 | 주요 변경 | 커밋 수 | 커밋 링크 | 웹서비스 |
@@ -237,9 +314,10 @@ v4.0은 기존 데이터 구조를 확장하는 "깊이 있는 개선" 세션이
 | v1.0.2 (Hotfix) | 2026-02-15 | globe.gl 교체, WebGL 감지/폴백, ErrorBoundary | 5 | [`e98fd41`](https://github.com/sunyoung-lee/global-sky-watcher/commit/e98fd41)...[`791d0ee`](https://github.com/sunyoung-lee/global-sky-watcher/commit/791d0ee) | [v1.0.2](https://global-sky-watcher-38ok9kal6-sunnys-projects-24db700f.vercel.app) |
 | v2.0 (Feature) | 2026-02-15 | 고도 색상, FlightCard, Jeju Focus, Toast, 캐싱, 필터링 | 6 | [`98c171d`](https://github.com/sunyoung-lee/global-sky-watcher/commit/98c171d)...[`e529ce2`](https://github.com/sunyoung-lee/global-sky-watcher/commit/e529ce2) | [v2.0](https://global-sky-watcher-fqaboqdq6-sunnys-projects-24db700f.vercel.app) |
 | v2.0.1 (Hotfix) | 2026-02-15 | Rate limit 대응, localStorage 캐싱, 인증, 프록시 폴백 | 7 | [`42c4c52`](https://github.com/sunyoung-lee/global-sky-watcher/commit/42c4c52)...[`0bf09c1`](https://github.com/sunyoung-lee/global-sky-watcher/commit/0bf09c1) | [v2.0.1](https://global-sky-watcher-8cb9gpdde-sunnys-projects-24db700f.vercel.app) |
-| v3.0 (Polish) | 2026-02-21 | CORS 해결, Edge Runtime, 글래스모피즘, 필터 UI, 카메라, 반응형 | 8 | [`01e334a`](https://github.com/sunyoung-lee/global-sky-watcher/commit/01e334a)...[`85c4d55`](https://github.com/sunyoung-lee/global-sky-watcher/commit/85c4d55) | [v3.0](https://global-sky-watcher.vercel.app) |
-| v4.0 (Feature) | 2026-02-21 | 데이터 필드 확장, 콜사인 검색, 상승/하강 필터, 키보드 단축키 | 1 | [`2cdb764`](https://github.com/sunyoung-lee/global-sky-watcher/commit/2cdb764) | [v4.0](https://global-sky-watcher.vercel.app) |
-| **합계** | | | **43** | | **최신**: [global-sky-watcher.vercel.app](https://global-sky-watcher.vercel.app) |
+| v3.0 (Polish) | 2026-02-21 | CORS 해결, Edge Runtime, 글래스모피즘, 필터 UI, 카메라, 반응형 | 8 | [`01e334a`](https://github.com/sunyoung-lee/global-sky-watcher/commit/01e334a)...[`e623984`](https://github.com/sunyoung-lee/global-sky-watcher/commit/e623984) | [v3.0](https://global-sky-watcher.vercel.app) |
+| v4.0 (Feature) | 2026-02-21 | 데이터 필드 확장, 콜사인 검색, 상승/하강 필터, 키보드 단축키 | 3 | [`2cdb764`](https://github.com/sunyoung-lee/global-sky-watcher/commit/2cdb764)...[`605cf09`](https://github.com/sunyoung-lee/global-sky-watcher/commit/605cf09) | [v4.0](https://global-sky-watcher.vercel.app) |
+| v5.0 (Visual) | 2026-02-21 | 궤적선, 국적 필터, 국기 이모지, 라우트 프록시, rate limit UX | 6 | [`7f1a97a`](https://github.com/sunyoung-lee/global-sky-watcher/commit/7f1a97a)...[`86809ee`](https://github.com/sunyoung-lee/global-sky-watcher/commit/86809ee) | [v5.0](https://global-sky-watcher.vercel.app) |
+| **합계** | | | **52** | | **최신**: [global-sky-watcher.vercel.app](https://global-sky-watcher.vercel.app) |
 
 ---
 
@@ -248,16 +326,18 @@ v4.0은 기존 데이터 구조를 확장하는 "깊이 있는 개선" 세션이
 ```mermaid
 graph TB
     subgraph Client["Client (Vite + React 19)"]
-        App[App.jsx<br/>useMemo 필터링]
-        Globe[Globe.jsx<br/>globe.gl vanilla]
-        Header[Header.jsx]
-        StatusBar[StatusBar.jsx<br/>펄스 로딩]
-        FlightCard[FlightCard.jsx<br/>Glassmorphism + 사이안 네온]
-        FilterPanel[FilterPanel.jsx<br/>고도 슬라이더 + 지역 칩]
+        App[App.jsx<br/>useMemo 필터링<br/>검색/키보드 단축키]
+        Globe[Globe.jsx<br/>globe.gl vanilla<br/>pointsData + pathsData]
+        Header[Header.jsx<br/>콜사인 검색]
+        StatusBar[StatusBar.jsx<br/>펄스 로딩 + 신선도]
+        FlightCard[FlightCard.jsx<br/>Glassmorphism + 국기 이모지<br/>라우트 표시]
+        FilterPanel[FilterPanel.jsx<br/>고도/지역/상승하강/국적 필터]
         Toast[Toast.jsx]
-        Hook[useFlightData.js]
+        Hook[useFlightData.js<br/>직접+프록시 이중화]
+        RouteHook[useFlightRoute.js<br/>라우트 조회 + 캐싱]
         EB[ErrorBoundary.jsx]
         Cache[(localStorage<br/>10min TTL)]
+        RouteCache[(In-Memory Map<br/>라우트 캐시)]
     end
 
     subgraph Server["Server (Express + WebSocket)"]
@@ -267,12 +347,13 @@ graph TB
     end
 
     subgraph Edge["Vercel Edge"]
-        EdgeFn[api/flights.js<br/>Edge Runtime]
+        EdgeFn[api/flights.js<br/>Edge Runtime<br/>States 프록시]
+        RouteFn[api/route.js<br/>Edge Runtime<br/>Flights 프록시]
         CDN[Vercel CDN<br/>Static Hosting]
     end
 
     subgraph External["External"]
-        OpenSky[OpenSky Network API]
+        OpenSky[OpenSky Network API<br/>/states/all + /flights/aircraft]
     end
 
     App --> EB --> Globe
@@ -282,13 +363,19 @@ graph TB
     App --> FilterPanel
     App --> Toast
     App --> Hook
+    FlightCard --> RouteHook
 
     Hook -->|"1차: 직접 fetch<br/>(Auth 없이, CORS OK)"| OpenSky
     Hook -->|"2차 폴백"| EdgeFn
     Hook -->|"로컬: WebSocket"| WS
     Hook -->|"캐싱/복원"| Cache
 
+    RouteHook -->|"1차: 프록시 경유"| RouteFn
+    RouteHook -->|"2차: 직접 폴백"| OpenSky
+    RouteHook -->|"캐싱"| RouteCache
+
     EdgeFn -->|"서버 인증<br/>(Basic Auth)"| OpenSky
+    RouteFn -->|"서버 인증<br/>(Basic Auth)"| OpenSky
     WS -->|broadcast| Fetcher
     Express -->|/api/flights| Fetcher
     Fetcher -->|polling 15s| OpenSky
