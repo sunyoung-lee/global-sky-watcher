@@ -12,9 +12,10 @@ Global Sky Watcher는 3D 인터랙티브 지구본 위에 전 세계의 실시�
 4. **Jeju Auto-Focus**: 앱 실행 시 제주도 상공을 비추며 시작하는 기능.
 
 ## 기술 아키텍처
-- **프론트엔드**: `React`, `Three.js`, `react-globe.gl`을 사용하여 3D 그래픽과 UI를 구현.
+- **프론트엔드**: `React 19`, `Three.js`, `globe.gl`(vanilla)을 사용하여 3D 그래픽과 UI를 구현.
 - **백엔드**: `Node.js`와 `Express`를 사용, WebSocket을 통해 실시간 데이터 푸시.
-- **고수준 시스템 설계**: 클라이언트는 3D 지구본을 렌더링하고, 백엔드는 OpenSky API를 주기적으로 호출하여 데이터를 제공.
+- **Edge 프록시**: Vercel Edge Runtime으로 OpenSky API 프록시 (CORS 우회 + 서버 인증).
+- **고수준 시스템 설계**: 클라이언트가 OpenSky를 직접 호출(1차), 실패 시 Edge 프록시 폴백(2차).
 
 ## 디자인 방향
 - **UX 원칙**: 직관적인 인터랙션과 즉각적인 피드백 제공.
@@ -35,12 +36,20 @@ Global Sky Watcher는 3D 인터랙티브 지구본 위에 전 세계의 실시�
 - 클릭당 정보 조회 비율
 
 ## 로드맵
-1. **v1**: 기본적인 3D Globe와 Live Flight Mapping 기능 구현.
-2. **v2**: 제주 상공 자동 포커스 및 야간 도시 불빛 추가.
-3. **v3**: 필터링 기능 및 카메라 애니메이션 개선.
+1. **v1** ✅: 3D Globe + Live Flight Mapping + WebSocket + 다크 테마.
+2. **v2** ✅: 고도 색상, Flight Detail, Jeju Auto-Focus, Toast, 캐싱, 필터링 로직.
+3. **v3** ✅: CORS 해결, Edge Runtime, 글래스모피즘, 필터 UI, 카메라 개선, 반응형.
 
 ## 개발 실행 데이터 (Implementation Data)
 - **CLAUDE.md (Project Rules)**: 제품의 규칙과 목표 정의.
 - **todo.md (Task List)**: 기능별 개발 및 테스트할 작업 목록.
 
 이 문서는 Global Sky Watcher 프로젝트의 명확한 방향성과 실행 계획을 제시하여 팀이 일관된 목표를 가지고 프로젝트를 진행할 수 있도록 돕습니다.
+
+## Change Log
+
+| 날짜 | 변경 내용 |
+|------|----------|
+| 2026-02-15 | 초기 작성: 요약, 타겟 시장, 핵심 기능(MVP), 기술 아키텍처, 디자인 방향 |
+| 2026-02-21 | 기술 아키텍처 업데이트: react-globe.gl→globe.gl, Edge Runtime 프록시 추가 |
+| 2026-02-21 | 로드맵 v1~v3 완료 상태 반영, 실제 구현 내용으로 설명 보정 |
