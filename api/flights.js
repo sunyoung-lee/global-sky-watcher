@@ -1,14 +1,17 @@
 const OPENSKY_URL = 'https://opensky-network.org/api/states/all'
 
-export const config = { maxDuration: 10 }
+export const config = { runtime: 'edge' }
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60')
+export default async function handler(request) {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Cache-Control': 's-maxage=30, stale-while-revalidate=60',
+    'Content-Type': 'application/json',
+  }
 
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 8000)
+    const timeout = setTimeout(() => controller.abort(), 15000)
 
     const headers = {
       'Accept': 'application/json',
@@ -18,7 +21,7 @@ export default async function handler(req, res) {
     const user = process.env.OPENSKY_USERNAME
     const pass = process.env.OPENSKY_PASSWORD
     if (user && pass) {
-      headers['Authorization'] = 'Basic ' + Buffer.from(`${user}:${pass}`).toString('base64')
+      headers['Authorization'] = 'Basic ' + btoa(`${user}:${pass}`)
     }
 
     const response = await fetch(OPENSKY_URL, {
@@ -28,13 +31,14 @@ export default async function handler(req, res) {
     clearTimeout(timeout)
 
     if (!response.ok) {
-      return res.status(response.status).json({
-        error: `OpenSky returned ${response.status}`,
-      })
+      return new Response(
+        JSON.stringify({ error: `OpenSky returned ${response.status}` }),
+        { status: response.status, headers: corsHeaders }
+      )
     }
 
     const data = await response.json()
-    if (!data.states) return res.json([])
+    if (!data.states) return new Response('[]', { headers: corsHeaders })
 
     const flights = data.states
       .filter(s => s[5] != null && s[6] != null && !s[8])
@@ -50,11 +54,11 @@ export default async function handler(req, res) {
         heading: s[10] || 0,
       }))
 
-    res.json(flights)
+    return new Response(JSON.stringify(flights), { headers: corsHeaders })
   } catch (err) {
     const isTimeout = err.name === 'AbortError'
     const status = isTimeout ? 504 : 502
     const message = isTimeout ? 'OpenSky response timeout' : (err.message || 'Failed to fetch')
-    res.status(status).json({ error: message })
+    return new Response(JSON.stringify({ error: message }), { status, headers: corsHeaders })
   }
 }
