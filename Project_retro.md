@@ -1,19 +1,19 @@
 # Global Sky Watcher — Project Retrospective
 
-## 프로젝트 종합 평가: 78 / 100
+## 프로젝트 종합 평가: 85 / 100
 
-| 평가 항목 | Day 1 (v1.0) | Day 2 (v2.0) | Day 3 (v3.0) | 변화 | 비고 |
-|-----------|:---:|:---:|:---:|:---:|------|
-| PRD 충실도 | 7/10 | 9/10 | 10/10 | +1 | MVP 4대 기능 + v3 감성 요소 전체 구현 |
-| CLAUDE.md 준수 | 8/10 | 8/10 | 9/10 | +1 | 글래스모피즘 정교화, 사이안 네온, Sunny Style 완성 |
-| 기능 완성도 | 6/10 | 8/10 | 9/10 | +1 | v3.0 9/10 완료. 전체 로드맵 22/23 (야간 불빛 제외) |
-| UX / 디자인 | 5/10 | 6/10 | 8/10 | +2 | 필터 UI, 카드 슬라이드인, 클릭 포커스, 반응형 추가 |
-| 보안 | 7/10 | 6/10 | 7/10 | +1 | VITE_ 인증 제거, 서버 프록시로 인증 격리 |
-| 테스트 | 2/10 | 2/10 | 3/10 | +1 | vite build 검증 + 수동 배포 테스트. 자동화 테스트 여전히 부재 |
-| 성능 | 5/10 | 7/10 | 8/10 | +1 | useMemo 필터링, 포인트 도트 경량화, Edge Runtime |
-| DX (개발경험) | 8/10 | 8/10 | 8/10 | — | 태스크별 커밋/push 유지. AI 협업 워크플로우 안정적 |
-| 배포 / 인프라 | 7/10 | 6/10 | 8/10 | +2 | Edge Runtime 전환, CORS 해결, 직접+폴백 이중화 |
-| **종합** | **55/100** | **62/100** | **78/100** | **+16** | **v3.0 Polish 완료. 안정적 배포 달성** |
+| 평가 항목 | Day 1 (v1.0) | Day 2 (v2.0) | Day 3 (v3.0) | Day 4 (v4.0) | 변화 | 비고 |
+|-----------|:---:|:---:|:---:|:---:|:---:|------|
+| PRD 충실도 | 7/10 | 9/10 | 10/10 | 10/10 | — | v4 확장 기능까지 전체 구현 |
+| CLAUDE.md 준수 | 8/10 | 8/10 | 9/10 | 9/10 | — | 디자인 토큰 일관성 유지 |
+| 기능 완성도 | 6/10 | 8/10 | 9/10 | 10/10 | +1 | v4.0 6/6 완료. 검색, 필터, 단축키 추가 |
+| UX / 디자인 | 5/10 | 6/10 | 8/10 | 9/10 | +1 | 검색 UI, 상승/하강 색상, 데이터 신선도 표시 |
+| 보안 | 7/10 | 6/10 | 7/10 | 7/10 | — | 변동 없음 |
+| 테스트 | 2/10 | 2/10 | 3/10 | 3/10 | — | vite build 검증 + curl 스모크 테스트 |
+| 성능 | 5/10 | 7/10 | 8/10 | 8/10 | — | 필터 vertState useMemo 확장 |
+| DX (개발경험) | 8/10 | 8/10 | 8/10 | 9/10 | +1 | 키보드 단축키(/, ESC)로 개발자 UX 향상 |
+| 배포 / 인프라 | 7/10 | 6/10 | 8/10 | 8/10 | — | Edge 프록시 유지, 안정 배포 |
+| **종합** | **55/100** | **62/100** | **78/100** | **85/100** | **+7** | **v4.0 기능 심화 완료. 검색+필터+단축키** |
 
 ---
 
@@ -166,7 +166,7 @@ Day 2에서 미해결이었던 OpenSky CORS/프록시 문제를 체계적으로 
 2. [ ] pre-commit hook으로 `vite build` 검증 등록 (AI 자동화)
 3. [ ] 브라우저 호환성 매트릭스 작성: Chrome/Safari/Firefox/Whale/Edge (AI 협업)
 4. [ ] OpenSky API 상태 모니터링 cron job 구성 (AI 자동화)
-5. [ ] 코드 변경 시 CORS 영향도 체크리스트 CLAUDE.md에 추가 (AI 협업)
+5. [x] 코드 변경 시 CORS 영향도 체크리스트 CLAUDE.md에 추가 (AI 협업) — Day 3 완료
 
 **핵심 교훈사항**:
 1. **Authorization 헤더 = CORS preflight**: 외부 API 호출 시 Auth 헤더 추가는 simple request → preflight request로 전환시킨다. API가 OPTIONS를 지원하는지 먼저 확인할 것.
@@ -182,6 +182,51 @@ Day 2에서 미해결이었던 OpenSky CORS/프록시 문제를 체계적으로 
 
 ---
 
+### 2026-02-21 (Day 4, 동일자 후반 세션)
+
+**한줄평**: v4.0 기능 심화 — 데이터 확장, 검색, 상승/하강 필터, 키보드 단축키 일괄 구현
+
+**금일 목표**: v4.0 전 항목 구현 — OpenSky 필드 확장, FlightCard 강화, 검색, 신선도, 필터, 단축키
+
+**소요 시간**: 약 30분
+
+**목표 달성도**:
+
+| 항목 | 점수 | 변화 | 상세 |
+|------|------|:---:|------|
+| PRD 충실도 | 10/10 | — | v4.0 확장 기능 전체 구현. PRD 로드맵 초과 달성 |
+| CLAUDE.md 준수 | 9/10 | — | 사이안 네온 컬러 일관, 모노 폰트 데이터 표시, 글래스모피즘 검색창 |
+| 기능 완성도 | 10/10 | +1 | v4.0 6/6 완료. vertRate/squawk/category 파싱, 검색, 필터 확장 |
+| UX / 디자인 | 9/10 | +1 | 검색창(글래스모피즘), 상승▲/하강▼ 색상 표시, 데이터 신선도, 방위 방향명 |
+| 보안 | 7/10 | — | 변동 없음 |
+| 테스트 | 3/10 | — | vite build 검증 + curl 200 확인 |
+| 성능 | 8/10 | — | vertState 필터링 useMemo에 통합, 불필요한 리렌더 방지 |
+| DX | 9/10 | +1 | ESC 카드 닫기, / 검색 포커스 — 키보드 중심 조작 가능 |
+| 배포 / 인프라 | 8/10 | — | Vercel prod 배포 성공, curl 200 확인 |
+
+**총평**:
+v4.0은 기존 데이터 구조를 확장하는 "깊이 있는 개선" 세션이었다. OpenSky API가 제공하는 26개 필드 중 기존 8개에서 11개(+vertRate, squawk, category)로 확장하여 항공 데이터의 활용도를 높였다. FlightCard에 상승/하강 표시(▲/▼ + 색상), 스쿼크 코드, 기체유형, 방위 방향명(N/NE/E 등)을 추가하여 정보 밀도를 개선했다. 콜사인 검색은 Header에 글래스모피즘 스타일 입력창을 배치하고 Enter로 매칭 항공편 선택 + 카메라 이동을 구현했다. 키보드 단축키(ESC, /)는 파워 유저 UX를 고려한 추가.
+
+**잘된 점**:
+- 데이터 레이어(useFlightData + api/flights.js) + UI 레이어(6개 컴포넌트) 동시 변경을 한 번의 빌드로 완료
+- vertRate 기반 Climbing/Descending/Cruising 필터로 항공 관제 유사 경험 제공
+- 키보드 단축키로 마우스 없이 검색→선택→닫기 플로우 완성
+- 30분 내 6개 기능 일괄 구현 — AI 협업 효율성 극대화
+
+**개선할 점**:
+- 검색 결과가 없을 때 시각적 피드백(shake 또는 빨간 테두리) 미구현
+- squawk 7500/7600/7700 비상 코드 특별 표시 미구현
+- 오래된 항공편 투명도 감소 기능 미구현 (StatusBar 신선도만 구현)
+- 자동화 테스트 여전히 부재
+
+**미해결 과제**:
+- 검색 결과 없음 피드백 UX
+- squawk 비상 코드 하이라이트
+- 비행 궤적선 (Breadcrumb Trail)
+- GitHub Actions CI 자동화
+
+---
+
 ## 버전 히스토리
 
 | 버전 | 날짜 | 주요 변경 | 커밋 수 | 커밋 링크 | 웹서비스 |
@@ -193,7 +238,8 @@ Day 2에서 미해결이었던 OpenSky CORS/프록시 문제를 체계적으로 
 | v2.0 (Feature) | 2026-02-15 | 고도 색상, FlightCard, Jeju Focus, Toast, 캐싱, 필터링 | 6 | [`98c171d`](https://github.com/sunyoung-lee/global-sky-watcher/commit/98c171d)...[`e529ce2`](https://github.com/sunyoung-lee/global-sky-watcher/commit/e529ce2) | [v2.0](https://global-sky-watcher-fqaboqdq6-sunnys-projects-24db700f.vercel.app) |
 | v2.0.1 (Hotfix) | 2026-02-15 | Rate limit 대응, localStorage 캐싱, 인증, 프록시 폴백 | 7 | [`42c4c52`](https://github.com/sunyoung-lee/global-sky-watcher/commit/42c4c52)...[`0bf09c1`](https://github.com/sunyoung-lee/global-sky-watcher/commit/0bf09c1) | [v2.0.1](https://global-sky-watcher-8cb9gpdde-sunnys-projects-24db700f.vercel.app) |
 | v3.0 (Polish) | 2026-02-21 | CORS 해결, Edge Runtime, 글래스모피즘, 필터 UI, 카메라, 반응형 | 8 | [`01e334a`](https://github.com/sunyoung-lee/global-sky-watcher/commit/01e334a)...[`85c4d55`](https://github.com/sunyoung-lee/global-sky-watcher/commit/85c4d55) | [v3.0](https://global-sky-watcher.vercel.app) |
-| **합계** | | | **42** | | **최신**: [global-sky-watcher.vercel.app](https://global-sky-watcher.vercel.app) |
+| v4.0 (Feature) | 2026-02-21 | 데이터 필드 확장, 콜사인 검색, 상승/하강 필터, 키보드 단축키 | 1 | [`2cdb764`](https://github.com/sunyoung-lee/global-sky-watcher/commit/2cdb764) | [v4.0](https://global-sky-watcher.vercel.app) |
+| **합계** | | | **43** | | **최신**: [global-sky-watcher.vercel.app](https://global-sky-watcher.vercel.app) |
 
 ---
 
